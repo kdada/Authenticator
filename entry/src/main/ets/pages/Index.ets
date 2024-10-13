@@ -4,10 +4,13 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { BusinessError, systemDateTime } from '@kit.BasicServicesKit';
 import { PromptActionClass } from './PromptActionClass ';
 import { ComponentContent } from '@kit.ArkUI';
-import { buffer, uri } from '@kit.ArkTS';
+import { buffer, JSON, uri } from '@kit.ArkTS';
 import { cryptoFramework } from '@kit.CryptoArchitectureKit';
+import { distributedKVStore } from '@kit.ArkData';
+import { kvManager } from '../entryability/EntryAbility';
 
 class AuthData {
+  id: number = 0
   alias: string = ""
   issuer: string = ""
   account: string = ""
@@ -17,16 +20,16 @@ class AuthData {
 
 class Params {
   value: string = ""
-  index: Index | null = null;
+  enabled: boolean = true
+  index: Index | null = null
 
-  constructor(value: string, index: Index) {
-    this.value = value
+  constructor(index: Index) {
     this.index = index
   }
 }
 
 @Builder
-function buildText(params: Params) {
+function buildAuthInput(params: Params) {
   Row() {
     Column() {
       Text("输入 2FA URI")
@@ -43,6 +46,10 @@ function buildText(params: Params) {
           PromptActionClass.closeDialog()
         })
         Button('添加').onClick(() => {
+          if (!params.enabled) {
+            return
+          }
+          params.enabled = false
           PromptActionClass.closeDialog()
           params.index?.addAuthItem(params.value)
         })
@@ -59,44 +66,96 @@ function buildText(params: Params) {
 @Component
 struct Index {
   @State items: AuthData[] = [];
+  @State progress: number = 0;
+  private next: number = 0;
   private ctx: UIContext = this.getUIContext();
-  // otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example
-  private params: Params =
-    new Params("otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example", this);
+  // Example: otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example
+  private params: Params = new Params(this);
   private contentNode: ComponentContent<Object> =
-    new ComponentContent(this.ctx, wrapBuilder(buildText), this.params);
+    new ComponentContent(this.ctx, wrapBuilder(buildAuthInput), this.params);
+  private kvStore?: distributedKVStore.DeviceKVStore;
+  private timer?: number;
+  private scroller: Scroller = new Scroller();
 
   aboutToAppear(): void {
     PromptActionClass.setContext(this.ctx);
     PromptActionClass.setContentNode(this.contentNode);
     PromptActionClass.setOptions(Object({ alignment: DialogAlignment.Center, offset: Object({ dx: 0, dy: 50 }) }));
+    kvManager.getKVStore("authdata", {
+      createIfMissing: true,
+      securityLevel: distributedKVStore.SecurityLevel.S2,
+    }, (err: Error, store: distributedKVStore.DeviceKVStore) => {
+      if (err) {
+        hilog.error(0x0001, '[KV Sample]',
+          `Failed to get KVStore. Code: ${err.name}, message: ${err.message}`);
+        return;
+      }
+      this.kvStore = store
+      this.kvStore.getEntries("/data/auth/", (err, data) => {
+        for (let i = 0; i < data.length; i++) {
+          let element = data[i];
+          let authdata = JSON.parse(element.value.value as string) as AuthData
+          authdata.password = this.generatePassword(authdata.secret).toString().padStart(6, "0")
+          this.items.push(authdata)
+          if (authdata.id >= this.next) {
+            this.next = authdata.id + 1
+          }
+        }
+      })
+    })
+    this.progress = systemDateTime.getTime(false) / 1000 % 30
+    this.timer = setInterval(() => {
+      this.progress = systemDateTime.getTime(false) / 1000 % 30
+      if (this.progress < 1) {
+        for (let i = 0; i < this.items.length; i++) {
+          let item = this.items[i]
+          item.password = this.generatePassword(item.secret).toString().padStart(6, "0")
+        }
+        let temp = this.items
+        this.items = []
+        this.items = temp
+      }
+    }, 1000)
+  }
+
+  aboutToDisappear(): void {
+    if (this.timer) {
+      clearInterval(this.timer)
+    }
   }
 
   build() {
     Column() {
       Navigation() {
-        Column() {
+        Progress({ value: this.progress, total: 29, type: ProgressType.Linear })
+          .width("100%").height(5)
+        List() {
           ForEach(this.items, (item: AuthData) => {
-            Row() {
-              SymbolGlyph($r("sys.symbol.person"))
-                .fontSize(30)
-                .margin(20)
-              Column() {
-                Text(item.alias)
+            ListItem() {
+              Row() {
+                SymbolGlyph($r("sys.symbol.person"))
+                  .fontSize(30)
+                  .margin(20)
+                Column() {
+                  Text(item.alias)
+                    .fontSize(20)
+                    .fontWeight(FontWeight.Bold)
+                  Text(item.account)
+                    .fontSize(10)
+                }
+                .alignItems(HorizontalAlign.Start)
+                .width("50%")
+
+                Text(item.password)
                   .fontSize(20)
                   .fontWeight(FontWeight.Bold)
-                Text(item.account)
-                  .fontSize(10)
               }
-              .alignItems(HorizontalAlign.Start)
-              .width("50%")
-
-              Text(item.password)
-                .fontSize(20)
-                .fontWeight(FontWeight.Bold)
+              .width("100%")
             }
-            .width("100%")
-          }, (item: AuthData, index: number) => index.toString())
+            .swipeAction({ end: this.deleteButton(item.id) })
+            .borderColor("#FFF0F0F0")
+            .borderWidth({ bottom: 1 })
+          }, (item: AuthData, index: number) => item.id.toString() + "-" + item.password)
         }
       }
       .menus([
@@ -117,6 +176,35 @@ struct Index {
       .hideBackButton(true)
       .mode(NavigationMode.Auto)
     }
+  }
+
+  @Builder
+  deleteButton(id: number) {
+    Button() {
+      SymbolGlyph($r("sys.symbol.trash"))
+        .fontSize(35)
+        .fontColor(["#FFFFFFFF"])
+    }
+    .backgroundColor('#ffee0000')
+    .type(ButtonType.Normal)
+    .width(70)
+    .height("100%")
+    .onClick((event) => {
+      let item: AuthData | undefined = undefined
+      let index = 0
+      for (let i = 0; i < this.items.length; i++) {
+        if (id == this.items[i].id) {
+          item = this.items[i]
+          index = i
+          break
+        }
+      }
+      if (!item) {
+        return
+      }
+      this.kvStore?.delete(`/data/auth/${item.id}`)
+      this.items.splice(index, 1)
+    })
   }
 
   base32Decode(secret: string): Uint8Array {
@@ -167,8 +255,6 @@ struct Index {
   }
 
   addAuthItem(data: string) {
-    this.params.value = "otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example"
-    this.contentNode.update(this.params)
     hilog.info(0x0001, '[Auth Sample]', `auth value is ${data}`);
 
     try {
@@ -187,13 +273,20 @@ struct Index {
       if (colon > 0 && issuer == null) {
         issuer = path.substring(0, colon)
       }
-      this.items.push({
+      let authdata: AuthData = {
+        id: this.next,
         alias: account,
         issuer: issuer ?? "",
         account: account,
         secret: secret,
         password: this.generatePassword(secret).toString().padStart(6, "0"),
-      })
+      }
+      this.next++
+      if (this.kvStore) {
+        let authString = JSON.stringify(authdata)
+        this.kvStore.put(`/data/auth/${authdata.id}`, authString)
+      }
+      this.items.push(authdata)
     } catch (error) {
       AlertDialog.show({
         title: '无效的 2FA URI',
@@ -213,6 +306,9 @@ struct Index {
   }
 
   onAddButtonPressed() {
+    this.params.value = ""
+    this.params.enabled = true
+    this.contentNode.update(this.params)
     PromptActionClass.openDialog();
   }
 
