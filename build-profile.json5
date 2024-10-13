@@ -1,0 +1,55 @@
+{
+  "app": {
+    "signingConfigs": [
+      {
+        "name": "default",
+        "type": "HarmonyOS",
+        "material": {
+          "storePassword": "0000001B550D917AE3339A2FDA2D136DD65BB0E5658FFA78416363DA0E9D21A9E4FB3AE015115A9EAD02D2",
+          "certpath": "C:/Users/Kira/.ohos/release/AuthenticatorRelease.cer",
+          "keyAlias": "AuthenticatorRelease",
+          "keyPassword": "0000001B27D70A6801743C55501ECF6D4172D2A71C6B48619BE1A1B1B0A5BFA96DBC4AB142FCFBC5A44CC1",
+          "profile": "C:/Users/Kira/.ohos/release/AuthenticatorRelease.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "C:/Users/Kira/.ohos/release/AuthenticatorRelease.p12"
+        }
+      }
+    ],
+    "products": [
+      {
+        "name": "default",
+        "signingConfig": "default",
+        "compatibleSdkVersion": "5.0.0(12)",
+        "runtimeOS": "HarmonyOS",
+        "buildOption": {
+          "strictMode": {
+            "caseSensitiveCheck": true,
+            "useNormalizedOHMUrl": true
+          }
+        }
+      }
+    ],
+    "buildModeSet": [
+      {
+        "name": "debug",
+      },
+      {
+        "name": "release"
+      }
+    ]
+  },
+  "modules": [
+    {
+      "name": "entry",
+      "srcPath": "./entry",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    }
+  ]
+}
