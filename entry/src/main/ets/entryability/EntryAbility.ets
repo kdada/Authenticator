@@ -1,4 +1,4 @@
-import { AbilityConstant, bundleManager, UIAbility, Want } from '@kit.AbilityKit';
+import { AbilityConstant, bundleManager, ConfigurationConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
 import { distributedKVStore } from '@kit.ArkData';
@@ -37,6 +37,13 @@ export default class EntryAbility extends UIAbility {
         return;
       }
       hilog.info(0x0000, 'testTag', 'Succeeded in loading the content.');
+      PersistentStorage.persistProp("enableAutoDarkMode", true)
+      PersistentStorage.persistProp("enableSafeMode", false)
+      if (AppStorage.get("enableAutoDarkMode")) {
+        this.context.getApplicationContext().setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
+      } else {
+        this.context.getApplicationContext().setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_LIGHT)
+      }
     });
   }
 

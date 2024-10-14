@@ -8,6 +8,8 @@ import { buffer, JSON, uri } from '@kit.ArkTS';
 import { cryptoFramework } from '@kit.CryptoArchitectureKit';
 import { distributedKVStore } from '@kit.ArkData';
 import { kvManager } from '../entryability/EntryAbility';
+import { Setting } from './Setting';
+import { userAuth } from '@kit.UserAuthenticationKit';
 
 class AuthData {
   id: number = 0
@@ -55,7 +57,7 @@ function buildAuthInput(params: Params) {
         })
       }.width("50%")
       .justifyContent(FlexAlign.SpaceEvenly)
-    }.backgroundColor('#FFF0F0F0')
+    }.backgroundColor($r("app.color.2fa_dialog_background"))
     .padding(10)
     .border({ radius: 5 })
   }
@@ -67,6 +69,9 @@ function buildAuthInput(params: Params) {
 struct Index {
   @State items: AuthData[] = [];
   @State progress: number = 0;
+  @Provide("NavPathStack") pageStack: NavPathStack = new NavPathStack();
+  @StorageProp("enableSafeMode") enableSafeMode: boolean = false
+  @State safe: boolean = false;
   private next: number = 0;
   private ctx: UIContext = this.getUIContext();
   // Example: otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example
@@ -124,9 +129,66 @@ struct Index {
     }
   }
 
+  onPageShow(): void {
+    if (!this.enableSafeMode) {
+      this.safe = true
+      return
+    }
+    // 设置认证参数
+    let reuseUnlockResult: userAuth.ReuseUnlockResult = {
+      reuseMode: userAuth.ReuseMode.AUTH_TYPE_RELEVANT,
+      reuseDuration: userAuth.MAX_ALLOWABLE_REUSE_DURATION,
+    }
+    try {
+      const rand = cryptoFramework.createRandom();
+      const len: number = 16;
+      const randData: Uint8Array = rand?.generateRandomSync(len)?.data;
+      const authParam: userAuth.AuthParam = {
+        challenge: randData,
+        authType: [userAuth.UserAuthType.FACE, userAuth.UserAuthType.FINGERPRINT, userAuth.UserAuthType.PIN],
+        authTrustLevel: userAuth.AuthTrustLevel.ATL3,
+        reuseUnlockResult: reuseUnlockResult,
+      };
+      // 配置认证界面
+      const widgetParam: userAuth.WidgetParam = {
+        title: '请进行身份认证',
+      };
+      // 获取认证对象
+      const userAuthInstance = userAuth.getUserAuthInstance(authParam, widgetParam);
+      // 订阅认证结果
+      let self = this
+      userAuthInstance.on('result', {
+        onResult(result) {
+          // 可在认证结束或其他业务需要场景，取消订阅认证结果
+          userAuthInstance.off('result');
+          if (result.result == userAuth.UserAuthResultCode.SUCCESS) {
+            self.safe = true
+          } else {
+            hilog.error(0x0001, '[Auth Sample]', `Failed to auth. Result: ${result.result}`);
+          }
+        }
+      });
+      userAuthInstance.start();
+    } catch (error) {
+      hilog.error(0x0001, '[Auth Sample]',
+        `Failed to auth. Code: ${error.code}, message: ${error.message}`);
+    }
+  }
+
+  onPageHide(): void {
+    this.safe = false
+  }
+
+  @Builder
+  PagesMap(name: string) {
+    if (name == 'Setting') {
+      Setting()
+    }
+  }
+
   build() {
     Column() {
-      Navigation() {
+      Navigation(this.pageStack) {
         Progress({ value: this.progress, total: 29, type: ProgressType.Linear })
           .width("100%").height(5)
         List() {
@@ -135,29 +197,34 @@ struct Index {
               Row() {
                 SymbolGlyph($r("sys.symbol.person"))
                   .fontSize(30)
-                  .margin(20)
+                  .padding(5)
+                  .margin(10)
+                  .fontColor([$r("app.color.vendor_icon_color")])
+                  .backgroundColor($r("app.color.vendor_background_color"))
+                  .borderRadius(20)
                 Column() {
-                  Text(item.alias)
+                  Text(item.issuer)
                     .fontSize(20)
                     .fontWeight(FontWeight.Bold)
                   Text(item.account)
                     .fontSize(10)
                 }
                 .alignItems(HorizontalAlign.Start)
-                .width("50%")
+                .width("60%")
 
-                Text(item.password)
+                Text(this.safe ? item.password : "******")
                   .fontSize(20)
                   .fontWeight(FontWeight.Bold)
               }
               .width("100%")
             }
             .swipeAction({ end: this.deleteButton(item.id) })
-            .borderColor("#FFF0F0F0")
+            .borderColor($r("app.color.item_separator_color"))
             .borderWidth({ bottom: 1 })
           }, (item: AuthData, index: number) => item.id.toString() + "-" + item.password)
         }
       }
+      .navDestination(this.PagesMap)
       .menus([
         {
           value: "add",
@@ -169,7 +236,11 @@ struct Index {
           symbolIcon: new SymbolGlyphModifier($r('sys.symbol.line_viewfinder')),
           action: () => this.onScanButtonPressed()
         },
-        { value: "setting", symbolIcon: new SymbolGlyphModifier($r('sys.symbol.gearshape')) },
+        {
+          value: "setting",
+          symbolIcon: new SymbolGlyphModifier($r('sys.symbol.gearshape')),
+          action: () => this.pageStack.pushPathByName("Setting", undefined)
+        },
       ])
       .title($r("app.string.EntryAbility_label"))
       .titleMode(NavigationTitleMode.Mini)
@@ -183,11 +254,11 @@ struct Index {
     Button() {
       SymbolGlyph($r("sys.symbol.trash"))
         .fontSize(35)
-        .fontColor(["#FFFFFFFF"])
+        .fontColor([$r("app.color.item_delete_icon_color")])
     }
-    .backgroundColor('#ffee0000')
+    .backgroundColor($r("app.color.item_delete_background_color"))
     .type(ButtonType.Normal)
-    .width(70)
+    .width(60)
     .height("100%")
     .onClick((event) => {
       let item: AuthData | undefined = undefined

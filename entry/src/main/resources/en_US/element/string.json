@@ -1,6 +1,14 @@
 {
   "string": [
     {
+      "name": "ACCESS_BIOMETRIC_reason",
+      "value": "Used to authenticate the user before displaying the 2FA password."
+    },
+    {
+      "name": "CAMERA_reason",
+      "value": "For scanning QR code"
+    },
+    {
       "name": "module_desc",
       "value": "module description"
     },

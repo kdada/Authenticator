@@ -10,14 +10,36 @@
     "deliveryWithInstall": true,
     "installationFree": false,
     "pages": "$profile:main_pages",
+        "requestPermissions":[
+      {
+        "name" : "ohos.permission.ACCESS_BIOMETRIC",
+        "reason": "$string:ACCESS_BIOMETRIC_reason",
+        "usedScene": {
+          "abilities": [
+            "FormAbility"
+          ],
+          "when":"inuse"
+        }
+      },
+      {
+        "name" : "ohos.permission.CAMERA",
+        "reason": "$string:CAMERA_reason",
+        "usedScene": {
+          "abilities": [
+            "FormAbility"
+          ],
+          "when":"always"
+        }
+      }
+    ],
     "abilities": [
       {
         "name": "EntryAbility",
         "srcEntry": "./ets/entryability/EntryAbility.ets",
         "description": "$string:EntryAbility_desc",
-        "icon": "$media:layered_image",
+        "icon": "$media:icon",
         "label": "$string:EntryAbility_label",
-        "startWindowIcon": "$media:startIcon",
+        "startWindowIcon": "$media:icon_startwindow",
         "startWindowBackground": "$color:start_window_background",
         "exported": true,
         "skills": [

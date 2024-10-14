@@ -2,31 +2,31 @@
   "color": [
     {
       "name": "item_delete_icon_color",
-      "value": "#F0F0F0"
+      "value": "#AAAAAA"
     },
     {
       "name": "item_delete_background_color",
-      "value": "#EE0000"
+      "value": "#AA0000"
     },
     {
       "name": "item_separator_color",
-      "value": "#F0F0F0"
+      "value": "#222222"
     },
     {
       "name": "vendor_background_color",
-      "value": "#EEEEEE"
+      "value": "#222222"
     },
     {
       "name": "vendor_icon_color",
-      "value": "#000000"
+      "value": "#AAAAAA"
     },
     {
       "name": "2fa_dialog_background",
-      "value": "#F0F0F0"
+      "value": "#101010"
     },
     {
       "name": "start_window_background",
-      "value": "#F1F1F1"
+      "value": "#000000"
     }
   ]
 }
