@@ -17,6 +17,7 @@ class AuthData {
   issuer: string = ""
   account: string = ""
   secret: string = ""
+  digits: number = 6
   password: string = ""
 }
 
@@ -100,12 +101,13 @@ struct Index {
         for (let i = 0; i < data.length; i++) {
           let element = data[i];
           let authdata = JSON.parse(element.value.value as string) as AuthData
-          authdata.password = this.generatePassword(authdata.secret).toString().padStart(6, "0")
+          authdata.password = this.generatePassword(authdata)
           this.items.push(authdata)
           if (authdata.id >= this.next) {
             this.next = authdata.id + 1
           }
         }
+        this.items.sort((a, b) => a.id - b.id)
       })
     })
     this.progress = systemDateTime.getTime(false) / 1000 % 30
@@ -114,7 +116,7 @@ struct Index {
       if (this.progress < 1) {
         for (let i = 0; i < this.items.length; i++) {
           let item = this.items[i]
-          item.password = this.generatePassword(item.secret).toString().padStart(6, "0")
+          item.password = this.generatePassword(item)
         }
         let temp = this.items
         this.items = []
@@ -186,6 +188,54 @@ struct Index {
     }
   }
 
+  @Builder
+  Logo(issuer: string) {
+    if (issuer == "Google") {
+      Image($rawfile("Google.png"))
+        .width(40)
+        .padding(5)
+        .margin(10)
+        .backgroundColor($r("app.color.vendor_background_color"))
+        .borderRadius(20)
+    } else if (issuer == "Microsoft") {
+      Image($rawfile("Microsoft.png"))
+        .width(40)
+        .padding(5)
+        .margin(10)
+        .backgroundColor($r("app.color.vendor_background_color"))
+        .borderRadius(20)
+    } else if (issuer == "Github") {
+      Image($rawfile("Github.png"))
+        .width(40)
+        .padding(5)
+        .margin(10)
+        .backgroundColor($r("app.color.vendor_background_color"))
+        .borderRadius(20)
+    } else if (issuer == "Gitlab") {
+      Image($rawfile("Gitlab.png"))
+        .width(40)
+        .padding(5)
+        .margin(10)
+        .backgroundColor($r("app.color.vendor_background_color"))
+        .borderRadius(20)
+    } else if (issuer == "Steam") {
+      Image($rawfile("Steam.png"))
+        .width(40)
+        .padding(5)
+        .margin(10)
+        .backgroundColor($r("app.color.vendor_background_color"))
+        .borderRadius(20)
+    } else {
+      SymbolGlyph($r("sys.symbol.person"))
+        .fontSize(30)
+        .padding(5)
+        .margin(10)
+        .fontColor([$r("app.color.vendor_icon_color")])
+        .backgroundColor($r("app.color.vendor_background_color"))
+        .borderRadius(20)
+    }
+  }
+
   build() {
     Column() {
       Navigation(this.pageStack) {
@@ -195,22 +245,16 @@ struct Index {
           ForEach(this.items, (item: AuthData) => {
             ListItem() {
               Row() {
-                SymbolGlyph($r("sys.symbol.person"))
-                  .fontSize(30)
-                  .padding(5)
-                  .margin(10)
-                  .fontColor([$r("app.color.vendor_icon_color")])
-                  .backgroundColor($r("app.color.vendor_background_color"))
-                  .borderRadius(20)
+                this.Logo(item.issuer)
                 Column() {
-                  Text(item.issuer)
+                  Text(item.alias)
                     .fontSize(20)
                     .fontWeight(FontWeight.Bold)
                   Text(item.account)
                     .fontSize(10)
                 }
                 .alignItems(HorizontalAlign.Start)
-                .width("60%")
+                .width("55%")
 
                 Text(this.safe ? item.password : "******")
                   .fontSize(20)
@@ -306,8 +350,8 @@ struct Index {
     return arr;
   }
 
-  generatePassword(secret: string): number {
-    let keyData: Uint8Array = this.base32Decode(secret)
+  generatePassword(authdata: AuthData): string {
+    let keyData: Uint8Array = this.base32Decode(authdata.secret)
     let timeStep = Math.floor(systemDateTime.getTime(false) / 1000 / 30)
     let timeData: Uint8Array = this.numToUint8Array(timeStep)
 
@@ -322,7 +366,20 @@ struct Index {
     buf[1] = result.data[offset+1] & 0xff
     buf[2] = result.data[offset+2] & 0xff
     buf[3] = result.data[offset+3] & 0xff
-    return buf.readUInt32BE() % Math.pow(10, 6)
+    let value = buf.readUInt32BE()
+    if (authdata.issuer != "Steam") {
+      return (value % Math.pow(10, authdata.digits)).toString().padStart(authdata.digits, "0")
+    }
+    // [50, 51, 52, 53, 54, 55, 56, 57, 66, 67, 68, 70, 71, 72, 74, 75, 77, 78, 80, 81, 82, 84, 86, 87, 88, 89]
+    const codes = ["2", "3", "4", "5", "6", "7", "8", "9",
+      "B", "C", "D", "F", "G", "H", "J", "K", "M", "N", "P", "Q", "R", "T", "V", "W", "X", "Y"]
+    let steamResult = ""
+    for (let i = 0; i < 5; i++) {
+      const element = codes[value%codes.length];
+      steamResult += element
+      value = Math.floor(value / codes.length)
+    }
+    return steamResult
   }
 
   addAuthItem(data: string) {
@@ -335,6 +392,7 @@ struct Index {
       }
       let secret = authURI.getQueryValue("secret")
       let issuer = authURI.getQueryValue("issuer")
+      let digits = authURI.getQueryValue("digits")
       let path = authURI.path
       if (path.startsWith("/")) {
         path = path.substring(1)
@@ -346,12 +404,14 @@ struct Index {
       }
       let authdata: AuthData = {
         id: this.next,
-        alias: account,
+        alias: issuer ?? account,
         issuer: issuer ?? "",
         account: account,
         secret: secret,
-        password: this.generatePassword(secret).toString().padStart(6, "0"),
+        digits: digits == "8" ? 8 : digits == "7" ? 7 : 6,
+        password: "",
       }
+      authdata.password = this.generatePassword(authdata)
       this.next++
       if (this.kvStore) {
         let authString = JSON.stringify(authdata)
