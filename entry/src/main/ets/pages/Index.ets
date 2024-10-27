@@ -10,16 +10,9 @@ import { distributedKVStore } from '@kit.ArkData';
 import { kvManager } from '../entryability/EntryAbility';
 import { Setting } from './Setting';
 import { userAuth } from '@kit.UserAuthenticationKit';
+import { Detail } from './Detail';
+import { AuthData } from './Base';
 
-class AuthData {
-  id: number = 0
-  alias: string = ""
-  issuer: string = ""
-  account: string = ""
-  secret: string = ""
-  digits: number = 6
-  password: string = ""
-}
 
 class Params {
   value: string = ""
@@ -79,7 +72,7 @@ struct Index {
   private params: Params = new Params(this);
   private contentNode: ComponentContent<Object> =
     new ComponentContent(this.ctx, wrapBuilder(buildAuthInput), this.params);
-  private kvStore?: distributedKVStore.DeviceKVStore;
+  @Provide("kvStore") kvStore?: distributedKVStore.DeviceKVStore = undefined;
   private timer?: number;
   private scroller: Scroller = new Scroller();
 
@@ -113,15 +106,13 @@ struct Index {
     this.progress = systemDateTime.getTime(false) / 1000 % 30
     this.timer = setInterval(() => {
       this.progress = systemDateTime.getTime(false) / 1000 % 30
-      if (this.progress < 1) {
-        for (let i = 0; i < this.items.length; i++) {
-          let item = this.items[i]
-          item.password = this.generatePassword(item)
-        }
-        let temp = this.items
-        this.items = []
-        this.items = temp
+      for (let i = 0; i < this.items.length; i++) {
+        let item = this.items[i]
+        item.password = this.generatePassword(item)
       }
+      let temp = this.items
+      this.items = []
+      this.items = temp
     }, 1000)
   }
 
@@ -182,9 +173,12 @@ struct Index {
   }
 
   @Builder
-  PagesMap(name: string) {
+  PagesMap(name: string, param: object) {
     if (name == 'Setting') {
       Setting()
+    }
+    if (name == 'Detail') {
+      Detail({ item: param as AuthData })
     }
   }
 
@@ -204,7 +198,7 @@ struct Index {
         .margin(10)
         .backgroundColor($r("app.color.vendor_background_color"))
         .borderRadius(20)
-    } else if (issuer == "Github") {
+    } else if (issuer == "GitHub") {
       Image($rawfile("Github.png"))
         .width(40)
         .padding(5)
@@ -261,6 +255,7 @@ struct Index {
                   .fontWeight(FontWeight.Bold)
               }
               .width("100%")
+              .onClick(() => this.pageStack.pushPathByName("Detail", item))
             }
             .swipeAction({ end: this.deleteButton(item.id) })
             .borderColor($r("app.color.item_separator_color"))
@@ -352,7 +347,8 @@ struct Index {
 
   generatePassword(authdata: AuthData): string {
     let keyData: Uint8Array = this.base32Decode(authdata.secret)
-    let timeStep = Math.floor(systemDateTime.getTime(false) / 1000 / 30)
+    let seconds = systemDateTime.getTime(false) / 1000
+    let timeStep = Math.floor(seconds / 30)
     let timeData: Uint8Array = this.numToUint8Array(timeStep)
 
     let hmac = cryptoFramework.createMac("SHA1")
@@ -367,9 +363,11 @@ struct Index {
     buf[2] = result.data[offset+2] & 0xff
     buf[3] = result.data[offset+3] & 0xff
     let value = buf.readUInt32BE()
-    if (authdata.issuer != "Steam") {
+    if (authdata.digits != 5) {
+      // TOTP 标准算法
       return (value % Math.pow(10, authdata.digits)).toString().padStart(authdata.digits, "0")
     }
+    // Steam 算法
     // [50, 51, 52, 53, 54, 55, 56, 57, 66, 67, 68, 70, 71, 72, 74, 75, 77, 78, 80, 81, 82, 84, 86, 87, 88, 89]
     const codes = ["2", "3", "4", "5", "6", "7", "8", "9",
       "B", "C", "D", "F", "G", "H", "J", "K", "M", "N", "P", "Q", "R", "T", "V", "W", "X", "Y"]
@@ -410,6 +408,10 @@ struct Index {
         secret: secret,
         digits: digits == "8" ? 8 : digits == "7" ? 7 : 6,
         password: "",
+        external: "",
+      }
+      if (issuer == "Steam") {
+        authdata.digits = 5
       }
       authdata.password = this.generatePassword(authdata)
       this.next++

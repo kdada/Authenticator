@@ -5,13 +5,26 @@
         "name": "default",
         "type": "HarmonyOS",
         "material": {
-          "storePassword": "0000001B550D917AE3339A2FDA2D136DD65BB0E5658FFA78416363DA0E9D21A9E4FB3AE015115A9EAD02D2",
           "certpath": "C:/Users/Kira/.ohos/release/AuthenticatorRelease.cer",
+          "storePassword": "0000001B0E95BCA0451AEDF8DF29160B0781565ED8F4BCD190380D80DDC55B50CFBC2BB7B7D050302E9AA5",
           "keyAlias": "AuthenticatorRelease",
-          "keyPassword": "0000001B27D70A6801743C55501ECF6D4172D2A71C6B48619BE1A1B1B0A5BFA96DBC4AB142FCFBC5A44CC1",
+          "keyPassword": "0000001B157F6069C0E772EB60FD14DE266A6887CE9A1264E838A4DB1B1AF71E10C53A7784F6BCB2061581",
           "profile": "C:/Users/Kira/.ohos/release/AuthenticatorRelease.p7b",
           "signAlg": "SHA256withECDSA",
           "storeFile": "C:/Users/Kira/.ohos/release/AuthenticatorRelease.p12"
+        }
+      },
+      {
+        "name": "dev",
+        "type": "HarmonyOS",
+        "material": {
+          "certpath": "C:\\Users\\Kira\\.ohos\\config\\dev_Authenticator_4bF5s5qeQZg8KAnmWWkbeIaW_mdOKLdknNy0ne4DSyc=.cer",
+          "storePassword": "0000001ADFC3F0928C474684F34B0EBEF4DA1E9FE56A5A6F65E14AE4F2D93D855ECE2A40E31CB8955A65",
+          "keyAlias": "debugKey",
+          "keyPassword": "0000001A5C3FD293C53DD1E719E60D112C9D1AA368E5EA1F682A8FB8CBD0E358EFF7F87A778C00BCEB4F",
+          "profile": "C:\\Users\\Kira\\.ohos\\config\\dev_Authenticator_4bF5s5qeQZg8KAnmWWkbeIaW_mdOKLdknNy0ne4DSyc=.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "C:\\Users\\Kira\\.ohos\\config\\dev_Authenticator_4bF5s5qeQZg8KAnmWWkbeIaW_mdOKLdknNy0ne4DSyc=.p12"
         }
       }
     ],
@@ -19,6 +32,18 @@
       {
         "name": "default",
         "signingConfig": "default",
+        "compatibleSdkVersion": "5.0.0(12)",
+        "runtimeOS": "HarmonyOS",
+        "buildOption": {
+          "strictMode": {
+            "caseSensitiveCheck": true,
+            "useNormalizedOHMUrl": true
+          }
+        }
+      },
+      {
+        "name": "dev",
+        "signingConfig": "dev",
         "compatibleSdkVersion": "5.0.0(12)",
         "runtimeOS": "HarmonyOS",
         "buildOption": {
@@ -47,6 +72,12 @@
           "name": "default",
           "applyToProducts": [
             "default"
+          ]
+        },
+        {
+          "name": "dev",
+          "applyToProducts": [
+            "dev"
           ]
         }
       ]
