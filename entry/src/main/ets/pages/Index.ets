@@ -56,6 +56,7 @@ function buildAuthInput(params: Params) {
     .border({ radius: 5 })
   }
   .alignItems(VerticalAlign.Center)
+  .width("90%")
 }
 
 @Entry
@@ -65,7 +66,7 @@ struct Index {
   @State progress: number = 0;
   @Provide("NavPathStack") pageStack: NavPathStack = new NavPathStack();
   @StorageProp("enableSafeMode") enableSafeMode: boolean = false
-  @State safe: boolean = false;
+  @Provide("safe") safe: boolean = false;
   private next: number = 0;
   private ctx: UIContext = this.getUIContext();
   // Example: otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example
@@ -128,10 +129,6 @@ struct Index {
       return
     }
     // 设置认证参数
-    let reuseUnlockResult: userAuth.ReuseUnlockResult = {
-      reuseMode: userAuth.ReuseMode.AUTH_TYPE_RELEVANT,
-      reuseDuration: userAuth.MAX_ALLOWABLE_REUSE_DURATION,
-    }
     try {
       const rand = cryptoFramework.createRandom();
       const len: number = 16;
@@ -140,7 +137,6 @@ struct Index {
         challenge: randData,
         authType: [userAuth.UserAuthType.FACE, userAuth.UserAuthType.FINGERPRINT, userAuth.UserAuthType.PIN],
         authTrustLevel: userAuth.AuthTrustLevel.ATL3,
-        reuseUnlockResult: reuseUnlockResult,
       };
       // 配置认证界面
       const widgetParam: userAuth.WidgetParam = {
