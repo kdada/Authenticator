@@ -10,25 +10,35 @@
     "deliveryWithInstall": true,
     "installationFree": false,
     "pages": "$profile:main_pages",
-        "requestPermissions":[
+    "requestPermissions": [
       {
-        "name" : "ohos.permission.ACCESS_BIOMETRIC",
+        "name": "ohos.permission.ACCESS_BIOMETRIC",
         "reason": "$string:ACCESS_BIOMETRIC_reason",
         "usedScene": {
           "abilities": [
             "FormAbility"
           ],
-          "when":"inuse"
+          "when": "inuse"
         }
       },
       {
-        "name" : "ohos.permission.CAMERA",
+        "name": "ohos.permission.CAMERA",
         "reason": "$string:CAMERA_reason",
         "usedScene": {
           "abilities": [
             "FormAbility"
           ],
-          "when":"always"
+          "when": "always"
+        }
+      },
+      {
+        "name": "ohos.permission.INTERNET",
+        "reason": "$string:INTERNET_reason",
+        "usedScene": {
+          "abilities": [
+            "FormAbility"
+          ],
+          "when": "always"
         }
       }
     ],

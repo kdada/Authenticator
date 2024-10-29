@@ -9,6 +9,10 @@
       "value": "For scanning QR code"
     },
     {
+      "name": "INTERNET_reason",
+      "value": "For accessing Steam API"
+    },
+    {
       "name": "module_desc",
       "value": "module description"
     },

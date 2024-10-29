@@ -1,8 +1,12 @@
 import { AuthData } from "./Base"
 import { distributedKVStore } from "@kit.ArkData";
-import { ComponentContent } from "@kit.ArkUI";
+import { ComponentContent, SymbolGlyphModifier } from "@kit.ArkUI";
 import { JSON, util } from "@kit.ArkTS";
 import { intl } from "@kit.LocalizationKit";
+import { scanBarcode, scanCore } from "@kit.ScanKit";
+import { hilog } from "@kit.PerformanceAnalysisKit";
+import { SteamClient } from "./Steam";
+import { BusinessError } from "@kit.BasicServicesKit";
 
 
 class PromptParams<T> {
@@ -170,6 +174,36 @@ export struct Detail {
     params.open()
   }
 
+  onSteamScanButtonPressed() {
+    let options: scanBarcode.ScanOptions =
+      { scanTypes: [scanCore.ScanType.ALL], enableMultiMode: true, enableAlbum: true };
+    try {
+      scanBarcode.startScanForResult(getContext(this), options).then((result: scanBarcode.ScanResult) => {
+        let client = new SteamClient()
+        client.approveQRLogin(this.steamAuthData.steamID, this.steamAuthData.refreshToken,
+          this.steamAuthData.shardSecret, false, result.originalValue,
+          (err) => {
+            if (err) {
+              hilog.error(0x0001, '[Scan Steam]',
+                `Failed to approve steam qr code. Code: ${err.name}, message: ${err.message}`);
+              return
+            }
+            this.getUIContext().getPromptAction().showToast({
+              message: "扫码登陆成功"
+            })
+          })
+        hilog.info(0x0001, '[Scan Steam]',
+          `Succeeded in getting ScanResult by promise with options, result is ${JSON.stringify(result)}`);
+      }).catch((error: BusinessError) => {
+        hilog.error(0x0001, '[Scan Steam]',
+          `Failed to get ScanResult by promise with options. Code: ${error.code}, message: ${error.message}`);
+      });
+    } catch (error) {
+      hilog.error(0x0001, '[Scan Steam]',
+        `Failed to startScanForResult. Code: ${error.code}, message: ${error.message}`);
+    }
+  }
+
   @Builder
   buildExternalView() {
     if (this.item.issuer == "Steam") {
@@ -213,7 +247,7 @@ export struct Detail {
           Text("过期时间")
             .width("30%")
             .textAlign(TextAlign.Start)
-          Text(this.steamExpirationTime.toLocaleString((new intl.Locale()).toString(), {hour12: false}))
+          Text(this.steamExpirationTime.toLocaleString((new intl.Locale()).toString(), { hour12: false }))
             .width("60%")
             .textAlign(TextAlign.End)
         }
@@ -291,6 +325,13 @@ export struct Detail {
       }
     }
     .title(this.item.alias)
+    .menus(this.steamExpirationTime < new Date() ? [
+      {
+        value: "scan",
+        symbolIcon: new SymbolGlyphModifier($r('sys.symbol.line_viewfinder')),
+        action: () => this.onSteamScanButtonPressed()
+      },
+    ] : [])
 
     //.onBackPressed(() => this.onSelfBackPress())
   }
