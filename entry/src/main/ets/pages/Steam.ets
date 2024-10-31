@@ -1,6 +1,39 @@
 import { http } from '@kit.NetworkKit'
 import { cryptoFramework } from '@kit.CryptoArchitectureKit'
 import { util } from '@kit.ArkTS'
+import { systemDateTime } from '@kit.BasicServicesKit'
+
+export class Confirmation {
+  // Test = 1
+  /// Occurs when sending a trade offer or accepting a received trade offer, only when there is items on the user's side
+  // Trade = 2
+  /// Occurs when selling an item on the Steam community market
+  // MarketSell = 3
+  // FeatureOptOut = 4
+  /// Occurs when changing the phone number associated with the account
+  // PhoneNumberChange = 5
+  /// Occurs when removing a phone number
+  // AccountRecovery = 6
+  /// Occurs when a new web API key is created via <https://steamcommunity.com/dev/apikey>
+  // ApiKeyCreation = 9
+  /// Occurs when a user is invited to join a Steam Family, and they have accepted the invitation. This is not used for accepting the initial invitation, just to confirm the acceptance.
+  ///
+  /// Triggered upon accepting invitation here: <https://store.steampowered.com/account/familymanagement>
+  // JoinSteamFamily = 11
+  public type: number = 0
+  public type_name: string = ""
+  public id: string = ""
+  /// Trade offer ID or market transaction ID
+  public creator_id: string = ""
+  public nonce: string = ""
+  public creation_time: number = 0
+  public cancel: string = ""
+  public accept: string = ""
+  public icon: string = ""
+  public multi: boolean = false
+  public headline: string = ""
+  public summary: string[] = []
+}
 
 export class SteamClient {
   private accessToken: string = ""
@@ -94,6 +127,108 @@ export class SteamClient {
         },
         extraData: data,
         expectDataType: http.HttpDataType.STRING,
+      }, (err, resp) => {
+        callback(err)
+      })
+    })
+  }
+
+  numToUint8Array(num: number): Uint8Array {
+    let arr = new Uint8Array(8);
+    for (let i = 7; i >= 0; i--) {
+      arr[i] = num & 0xff;
+      num = num >> 8;
+    }
+    return arr;
+  }
+
+
+  generateSignatureForURI(hashMethod: string, secret: string, data: Uint8Array[]): string {
+    let base64 = new util.Base64Helper()
+    let keyData: Uint8Array = base64.decodeSync(secret)
+    let hmac = cryptoFramework.createMac(hashMethod)
+    let key = cryptoFramework.createSymKeyGenerator("HMAC").convertKeySync({ data: keyData })
+    hmac.initSync(key)
+    for (let i = 0; i < data.length; i++) {
+      hmac.updateSync({ data: data[i] })
+    }
+    let result = hmac.doFinalSync()
+    return encodeURIComponent(base64.encodeToStringSync(result.data))
+  }
+
+  getConfirmations(steamID: string, refreshToken: string, identitySecret: string, deviceID: string,
+    callback: (err: Error, confirmations: Confirmation[]) => void) {
+    let url = "https://steamcommunity.com/mobileconf/getlist"
+
+    let tag = "conf"
+    let seconds = Math.floor(systemDateTime.getTime(false) / 1000)
+    let signature = this.generateSignatureForURI("SHA1", identitySecret,
+      [this.numToUint8Array(seconds), new util.TextEncoder().encodeInto(tag)])
+    let data = `p=${deviceID}&a=${steamID}&t=${seconds}&m=react&tag=${tag}&k=${signature}`
+
+    this.generateAccessToken(steamID, refreshToken, (err: Error | null, token: string) => {
+      if (err) {
+        callback(err, [])
+        return
+      }
+
+      let req = http.createHttp()
+      req.request(url + `?${data}`, {
+        method: http.RequestMethod.GET,
+        header: {
+          "Cookie": `dob=;steamid=${steamID};steamLoginSecure=${steamID}||${token}`
+        },
+        expectDataType: http.HttpDataType.OBJECT,
+      }, (err, resp) => {
+        if (err) {
+          callback(err, [])
+          return
+        }
+        callback(err, resp.result["conf"] as Confirmation[])
+      })
+    })
+  }
+
+  allow(steamID: string, refreshToken: string, identitySecret: string, deviceID: string,
+    confirmations: Confirmation[], callback: (err: Error) => void) {
+    this.confirm(steamID, refreshToken, identitySecret, deviceID, confirmations, "allow", callback)
+  }
+
+  deny(steamID: string, refreshToken: string, identitySecret: string, deviceID: string,
+    confirmations: Confirmation[], callback: (err: Error) => void) {
+    this.confirm(steamID, refreshToken, identitySecret, deviceID, confirmations, "cancel", callback)
+  }
+
+  confirm(steamID: string, refreshToken: string, identitySecret: string, deviceID: string,
+    confirmations: Confirmation[], op: string, callback: (err: Error) => void) {
+    let url = "https://steamcommunity.com/mobileconf/multiajaxop"
+    let contentType = "application/x-www-form-urlencoded"
+
+    let tag = "conf"
+    let seconds = Math.floor(systemDateTime.getTime(false) / 1000)
+    let signature = this.generateSignatureForURI("SHA1", identitySecret,
+      [this.numToUint8Array(seconds), new util.TextEncoder().encodeInto(tag)])
+    let data = `p=${deviceID}&a=${steamID}&t=${seconds}&m=react&tag=${tag}&k=${signature}&op=${op}`
+
+    for (const confirmation of confirmations) {
+      data += `&cid[]=${confirmation.id}&ck[]=${confirmation.nonce}`
+    }
+
+    this.generateAccessToken(steamID, refreshToken, (err: Error | null, token: string) => {
+      if (err) {
+        callback(err)
+        return
+      }
+
+      let req = http.createHttp()
+      req.request(url + `?${data}`, {
+        method: http.RequestMethod.POST,
+        header: {
+          "Content-Type": contentType,
+          "Cookie": `dob=;steamid=${steamID};steamLoginSecure=${steamID}||${token}`
+        },
+        extraData: data,
+        expectDataType: http.HttpDataType.OBJECT,
       }, (err, resp) => {
         callback(err)
       })

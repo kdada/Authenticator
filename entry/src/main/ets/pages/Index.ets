@@ -12,6 +12,7 @@ import { Setting } from './Setting';
 import { userAuth } from '@kit.UserAuthenticationKit';
 import { Detail } from './Detail';
 import { AuthData } from './Base';
+import { SteamConfirmationList } from './SteamConfirmationList';
 
 
 class Params {
@@ -64,7 +65,7 @@ function buildAuthInput(params: Params) {
 struct Index {
   @State items: AuthData[] = [];
   @State progress: number = 0;
-  @Provide("NavPathStack") pageStack: NavPathStack = new NavPathStack();
+  @Provide("pageStack") pageStack: NavPathStack = new NavPathStack();
   @StorageProp("enableSafeMode") enableSafeMode: boolean = false
   @Provide("safe") safe: boolean = false;
   private next: number = 0;
@@ -172,9 +173,10 @@ struct Index {
   PagesMap(name: string, param: object) {
     if (name == 'Setting') {
       Setting()
-    }
-    if (name == 'Detail') {
+    } else if (name == 'Detail') {
       Detail({ item: param as AuthData })
+    } else if (name == "SteamConfirmationList") {
+      SteamConfirmationList({ steamAuthData: param["authData"], steamClient: param["client"] })
     }
   }
 

@@ -1,4 +1,4 @@
-import { AuthData } from "./Base"
+import { AuthData, SteamAuthData } from "./Base"
 import { distributedKVStore } from "@kit.ArkData";
 import { ComponentContent, SymbolGlyphModifier } from "@kit.ArkUI";
 import { JSON, util } from "@kit.ArkTS";
@@ -38,20 +38,6 @@ class SteamParams {
   }
 }
 
-class SteamAuthData {
-  public accountName: string = ""
-  public steamID: string = ""
-  public serialNumber: string = ""
-  public revocationCode: string = ""
-  public shardSecret: string = ""
-  public tokenGID: string = ""
-  public identitySecret: string = ""
-  public uri: string = ""
-  public deviceID: string = ""
-  public secret1: string = ""
-  public accessToken: string = ""
-  public refreshToken: string = ""
-}
 
 @Builder
 function buildSteamInput(params: PromptParams<SteamParams>) {
@@ -60,7 +46,7 @@ function buildSteamInput(params: PromptParams<SteamParams>) {
       Text("输入 Steam 认证信息")
         .fontSize(30)
         .fontWeight(FontWeight.Bold)
-      Text("认证通过后可以使用 Steam 交易确认功能")
+      Text("认证通过后可以使用 Steam 扫码登陆和交易确认功能")
         .fontSize(12)
         .fontWeight(FontWeight.Normal)
         .margin({ bottom: 20 })
@@ -134,8 +120,10 @@ export struct Detail {
   @State progress: number = 0;
   @State steamAuthData: SteamAuthData = new SteamAuthData()
   @State steamExpirationTime: Date = new Date()
+  private steamClient = new SteamClient()
   @Consume("kvStore") kvStore: distributedKVStore.DeviceKVStore;
   @Consume("safe") safe: boolean;
+  @Consume("pageStack") pageStack: NavPathStack;
   private changed: boolean = false
   private timer?: number;
 
@@ -179,8 +167,7 @@ export struct Detail {
       { scanTypes: [scanCore.ScanType.ALL], enableMultiMode: true, enableAlbum: true };
     try {
       scanBarcode.startScanForResult(getContext(this), options).then((result: scanBarcode.ScanResult) => {
-        let client = new SteamClient()
-        client.approveQRLogin(this.steamAuthData.steamID, this.steamAuthData.refreshToken,
+        this.steamClient.approveQRLogin(this.steamAuthData.steamID, this.steamAuthData.refreshToken,
           this.steamAuthData.shardSecret, false, result.originalValue,
           (err) => {
             if (err) {
@@ -202,6 +189,11 @@ export struct Detail {
       hilog.error(0x0001, '[Scan Steam]',
         `Failed to startScanForResult. Code: ${error.code}, message: ${error.message}`);
     }
+  }
+
+  onSteamQueryButtonPressed() {
+    let params: Record<string, Object> = { "authData": this.steamAuthData, "client": this.steamClient }
+    this.pageStack.pushPathByName("SteamConfirmationList", params)
   }
 
   @Builder
@@ -253,6 +245,9 @@ export struct Detail {
         }
         .height(40)
         .alignItems(VerticalAlign.Center)
+
+        Button("查询 Steam 确认列表")
+          .onClick(() => this.onSteamQueryButtonPressed())
       }
     }
   }
@@ -325,15 +320,13 @@ export struct Detail {
       }
     }
     .title(this.item.alias)
-    .menus(this.steamExpirationTime < new Date() ? [
+    .menus(this.steamExpirationTime > new Date() ? [
       {
         value: "scan",
         symbolIcon: new SymbolGlyphModifier($r('sys.symbol.line_viewfinder')),
         action: () => this.onSteamScanButtonPressed()
       },
     ] : [])
-
-    //.onBackPressed(() => this.onSelfBackPress())
   }
 
   onSelfBackPress(): boolean {

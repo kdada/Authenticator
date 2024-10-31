@@ -5,6 +5,10 @@
       "value": "#F0F0F0"
     },
     {
+      "name": "item_confirm_background_color",
+      "value": "#00EE00"
+    },
+    {
       "name": "item_delete_background_color",
       "value": "#EE0000"
     },
