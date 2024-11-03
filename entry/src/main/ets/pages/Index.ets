@@ -13,6 +13,8 @@ import { userAuth } from '@kit.UserAuthenticationKit';
 import { Detail } from './Detail';
 import { AuthData } from './Base';
 import { SteamConfirmationList } from './SteamConfirmationList';
+import { SteamConfirmationDetail } from './SteamConfirmationDetail';
+import { Confirmation } from './Steam';
 
 
 class Params {
@@ -177,6 +179,8 @@ struct Index {
       Detail({ item: param as AuthData })
     } else if (name == "SteamConfirmationList") {
       SteamConfirmationList({ steamAuthData: param["authData"], steamClient: param["client"] })
+    } else if (name == "SteamConfirmationDetail") {
+      SteamConfirmationDetail({confirmation: param as Confirmation})
     }
   }
 

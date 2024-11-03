@@ -1,6 +1,7 @@
 import { SteamAuthData } from "./Base";
 import { Confirmation, SteamClient } from "./Steam";
 import { SymbolGlyphModifier } from "@kit.ArkUI";
+import { intl } from "@kit.LocalizationKit";
 
 @Component
 export struct SteamConfirmationList {
@@ -8,9 +9,41 @@ export struct SteamConfirmationList {
   public steamClient: SteamClient = new SteamClient()
   @State steamConfirmations: Confirmation[] = []
   @State loading: boolean = false
+  @Consume("pageStack") pageStack: NavPathStack;
 
   aboutToAppear(): void {
     this.loadSteamConfirmations()
+  }
+
+  getType(conf: Confirmation): string {
+    switch (conf.type) {
+      case 1:
+        return "测试"
+      case 2:
+        return "交易"
+      case 3:
+        return "出售"
+      case 5:
+        return "修改手机号码"
+      case 6:
+        return "解绑手机号码"
+      case 9:
+        return "创建访问密钥"
+      default:
+        return "未知类型"
+    }
+  }
+
+  getTitle(conf: Confirmation): string {
+    let title = `${this.getType(conf)}`
+    if (conf.headline && conf.headline.length > 0) {
+      title += ` - ${conf.headline}`
+    }
+    return title
+  }
+
+  getDescription(conf: Confirmation): string {
+    return conf.summary.join(", ")
   }
 
   loadSteamConfirmations(): void {
@@ -42,47 +75,93 @@ export struct SteamConfirmationList {
     this.steamConfirmations = newArray
   }
 
+  allowAll() {
+    this.getUIContext().getPromptAction().showActionMenu({
+      title: "全部允许？",
+      buttons: [{ text: "是", color: $r("app.color.item_confirm_background_color") }],
+    }).then((value) => {
+      if (value.index == 0) {
+        this.steamClient.allow(this.steamAuthData.steamID, this.steamAuthData.refreshToken,
+          this.steamAuthData.identitySecret, this.steamAuthData.deviceID, this.steamConfirmations, (err) => {
+            if (err) {
+              this.getUIContext().getPromptAction().showToast({
+                message: "确认请求失败，错误：${err.message}"
+              })
+              return
+            }
+            this.steamConfirmations = []
+          })
+      }
+    })
+  }
+
+  denyAll() {
+    this.getUIContext().getPromptAction().showActionMenu({
+      title: "全部拒绝？",
+      buttons: [{ text: "是", color: $r("app.color.item_delete_background_color") }],
+    }).then((value) => {
+      if (value.index == 0) {
+        this.steamClient.deny(this.steamAuthData.steamID, this.steamAuthData.refreshToken,
+          this.steamAuthData.identitySecret, this.steamAuthData.deviceID, this.steamConfirmations, (err) => {
+            if (err) {
+              this.getUIContext().getPromptAction().showToast({
+                message: "拒绝请求失败，错误：${err.message}"
+              })
+              return
+            }
+            this.steamConfirmations = []
+          })
+      }
+    })
+  }
+
   @Builder
   confirmationButtons(item: Confirmation) {
-    Button() {
-      Text("确认")
-    }
-    .backgroundColor($r("app.color.item_confirm_background_color"))
-    .type(ButtonType.Normal)
-    .width(60)
-    .height("100%")
-    .onClick((event) => {
-      this.steamClient.deny(this.steamAuthData.steamID, this.steamAuthData.refreshToken,
-        this.steamAuthData.identitySecret, this.steamAuthData.deviceID, [item], (err) => {
-          if (err) {
-            this.getUIContext().getPromptAction().showToast({
-              message: "确认失败"
-            })
-            return
-          }
-          this.removeConfirmation(item)
-        })
-    })
+    Row() {
+      Button() {
+        SymbolGlyph($r("sys.symbol.checkmark"))
+          .fontSize(35)
+          .fontColor([$r("app.color.item_delete_icon_color")])
+      }
+      .backgroundColor($r("app.color.item_confirm_background_color"))
+      .type(ButtonType.Normal)
+      .width(60)
+      .height("100%")
+      .onClick((event) => {
+        this.steamClient.allow(this.steamAuthData.steamID, this.steamAuthData.refreshToken,
+          this.steamAuthData.identitySecret, this.steamAuthData.deviceID, [item], (err) => {
+            if (err) {
+              this.getUIContext().getPromptAction().showToast({
+                message: "确认请求失败，错误：${err.message}"
+              })
+              return
+            }
+            this.removeConfirmation(item)
+          })
+      })
 
-    Button() {
-      Text("拒绝")
+      Button() {
+        SymbolGlyph($r("sys.symbol.xmark"))
+          .fontSize(35)
+          .fontColor([$r("app.color.item_delete_icon_color")])
+      }
+      .backgroundColor($r("app.color.item_delete_background_color"))
+      .type(ButtonType.Normal)
+      .width(60)
+      .height("100%")
+      .onClick((event) => {
+        this.steamClient.deny(this.steamAuthData.steamID, this.steamAuthData.refreshToken,
+          this.steamAuthData.identitySecret, this.steamAuthData.deviceID, [item], (err) => {
+            if (err) {
+              this.getUIContext().getPromptAction().showToast({
+                message: "拒绝请求失败，错误：${err.message}"
+              })
+              return
+            }
+            this.removeConfirmation(item)
+          })
+      })
     }
-    .backgroundColor($r("app.color.item_delete_background_color"))
-    .type(ButtonType.Normal)
-    .width(60)
-    .height("100%")
-    .onClick((event) => {
-      this.steamClient.deny(this.steamAuthData.steamID, this.steamAuthData.refreshToken,
-        this.steamAuthData.identitySecret, this.steamAuthData.deviceID, [item], (err) => {
-          if (err) {
-            this.getUIContext().getPromptAction().showToast({
-              message: "删除失败"
-            })
-            return
-          }
-          this.removeConfirmation(item)
-        })
-    })
   }
 
   build() {
@@ -94,21 +173,40 @@ export struct SteamConfirmationList {
           ForEach(this.steamConfirmations, (item: Confirmation) => {
             ListItem() {
               Row() {
+                if (item.icon && item.icon.length > 0) {
+                  Image(item.icon)
+                    .width(40)
+                    .padding(5)
+                    .margin(10)
+                    .backgroundColor($r("app.color.vendor_background_color"))
+                    .borderRadius(5)
+                } else {
+                  SymbolGlyph($r("sys.symbol.ellipsis_message"))
+                    .fontSize(30)
+                    .padding(5)
+                    .margin(10)
+                    .fontColor([$r("app.color.vendor_icon_color")])
+                    .backgroundColor($r("app.color.vendor_background_color"))
+                    .borderRadius(5)
+                }
                 Column() {
-                  Text(item.type_name)
-                    .fontSize(20)
+                  Text(this.getTitle(item))
+                    .fontSize(15)
                     .fontWeight(FontWeight.Bold)
-                  Text(item.id)
+                  Text(this.getDescription(item))
+                    .fontSize(10)
+                    .margin({ top: 2, bottom: 2 })
+                  Text((new Date(item.creation_time * 1000)).toLocaleString((new intl.Locale()).toString(),
+                    { hour12: false }))
                     .fontSize(10)
                 }
                 .alignItems(HorizontalAlign.Start)
-                .width("55%")
-
-                Text(item.creator_id)
-                  .fontSize(20)
-                  .fontWeight(FontWeight.Bold)
               }
+              .padding({ top: 5, bottom: 5 })
               .width("100%")
+              .onClick(() => {
+                this.pageStack.pushPathByName("SteamConfirmationDetail", item)
+              })
             }
             .swipeAction({ end: this.confirmationButtons(item) })
             .borderColor($r("app.color.item_separator_color"))
@@ -119,6 +217,19 @@ export struct SteamConfirmationList {
     }
     .title("Steam 确认列表")
     .menus([
+
+      {
+        value: "allow",
+        isEnabled: !this.loading && this.steamConfirmations.length > 0,
+        symbolIcon: new SymbolGlyphModifier($r('sys.symbol.checkmark')),
+        action: () => this.allowAll()
+      },
+      {
+        value: "deny",
+        isEnabled: !this.loading && this.steamConfirmations.length > 0,
+        symbolIcon: new SymbolGlyphModifier($r('sys.symbol.xmark')),
+        action: () => this.denyAll()
+      },
       {
         value: "refresh",
         isEnabled: !this.loading,

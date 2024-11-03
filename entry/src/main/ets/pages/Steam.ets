@@ -29,7 +29,7 @@ export class Confirmation {
   public creation_time: number = 0
   public cancel: string = ""
   public accept: string = ""
-  public icon: string = ""
+  public icon: string | undefined | null = null
   public multi: boolean = false
   public headline: string = ""
   public summary: string[] = []
@@ -53,7 +53,7 @@ export class SteamClient {
     req.request(url, {
       method: http.RequestMethod.POST,
       header: {
-        "Content-Type": contentType
+        "Content-Type": contentType,
       },
       extraData: data,
       expectDataType: http.HttpDataType.OBJECT,

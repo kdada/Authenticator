@@ -245,9 +245,6 @@ export struct Detail {
         }
         .height(40)
         .alignItems(VerticalAlign.Center)
-
-        Button("查询 Steam 确认列表")
-          .onClick(() => this.onSteamQueryButtonPressed())
       }
     }
   }
@@ -326,6 +323,11 @@ export struct Detail {
         symbolIcon: new SymbolGlyphModifier($r('sys.symbol.line_viewfinder')),
         action: () => this.onSteamScanButtonPressed()
       },
+      {
+        value: "confirm",
+        symbolIcon: new SymbolGlyphModifier($r('sys.symbol.list_checkmask')),
+        action: () =>this.onSteamQueryButtonPressed()
+      }
     ] : [])
   }
 
