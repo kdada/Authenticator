@@ -317,7 +317,7 @@ export struct Detail {
       }
     }
     .title(this.item.alias)
-    .menus(this.steamExpirationTime > new Date() ? [
+    .menus(this.steamExpirationTime.getTime() > new Date().getTime() ? [
       {
         value: "scan",
         symbolIcon: new SymbolGlyphModifier($r('sys.symbol.line_viewfinder')),
