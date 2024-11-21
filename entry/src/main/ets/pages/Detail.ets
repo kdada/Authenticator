@@ -154,7 +154,7 @@ export struct Detail {
       this.steamAuthData = JSON.parse(this.item.external) as SteamAuthData
       let parts = this.steamAuthData.refreshToken.split(".")
       let base64 = new util.Base64Helper()
-      let data = base64.decodeSync(parts[1])
+      let data = base64.decodeSync(parts[1], util.Type.BASIC_URL_SAFE)
       let decoder = new util.TextDecoder()
       let jwt = decoder.decodeToString(data)
       let obj = JSON.parse(jwt) as Record<string, Object>
