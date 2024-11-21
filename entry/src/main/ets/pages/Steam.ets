@@ -145,7 +145,7 @@ export class SteamClient {
 
   generateSignatureForURI(hashMethod: string, secret: string, data: Uint8Array[]): string {
     let base64 = new util.Base64Helper()
-    let keyData: Uint8Array = base64.decodeSync(secret, util.Type.BASIC_URL_SAFE)
+    let keyData: Uint8Array = base64.decodeSync(secret)
     let hmac = cryptoFramework.createMac(hashMethod)
     let key = cryptoFramework.createSymKeyGenerator("HMAC").convertKeySync({ data: keyData })
     hmac.initSync(key)
