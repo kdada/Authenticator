@@ -90,7 +90,7 @@ function buildSteamInput(params: PromptParams<SteamParams>) {
             })
           } catch (e) {
             params.data.detail?.getUIContext().getPromptAction().showToast({
-              message: "认证信息格式错误，请确保内容来自 maFile 文件"
+              message: `认证信息格式错误，请确保内容来自 maFile 文件，${e.toString()}`
             })
             return
           }
@@ -99,9 +99,13 @@ function buildSteamInput(params: PromptParams<SteamParams>) {
           detail.item.external = JSON.stringify(data)
           detail.item.account = data.accountName
           let authString = JSON.stringify(detail.item)
-          detail.kvStore.put(`/data/auth/${detail.item.id}`, authString).finally(() => {
+          params.close()
+          detail.kvStore.put(`/data/auth/${detail.item.id}`, authString).catch((reason: Object) => {
+            params.data.detail?.getUIContext().getPromptAction().showToast({
+              message: `保存认证信息错误，${reason}`
+            })
+          }).finally(() => {
             params.data.detail?.loadSteamAuthData()
-            params.close()
           })
         })
       }.width("50%")
@@ -146,15 +150,21 @@ export struct Detail {
     if (this.item.issuer != "Steam" || this.item.external == "") {
       return
     }
-    this.steamAuthData = JSON.parse(this.item.external) as SteamAuthData
-    let parts = this.steamAuthData.refreshToken.split(".")
-    let base64 = new util.Base64Helper()
-    let data = base64.decodeSync(parts[1])
-    let decoder = new util.TextDecoder()
-    let jwt = decoder.decodeToString(data)
-    let obj = JSON.parse(jwt) as Record<string, Object>
-    let unixTimestamp = obj["exp"] as number
-    this.steamExpirationTime = new Date(unixTimestamp * 1000)
+    try {
+      this.steamAuthData = JSON.parse(this.item.external) as SteamAuthData
+      let parts = this.steamAuthData.refreshToken.split(".")
+      let base64 = new util.Base64Helper()
+      let data = base64.decodeSync(parts[1])
+      let decoder = new util.TextDecoder()
+      let jwt = decoder.decodeToString(data)
+      let obj = JSON.parse(jwt) as Record<string, Object>
+      let unixTimestamp = obj["exp"] as number
+      this.steamExpirationTime = new Date(unixTimestamp * 1000)
+    } catch (e) {
+      this.getUIContext().getPromptAction().showToast({
+        message: `认证信息格式错误，${e.toString()}, 内容：${this.item.external}`
+      })
+    }
   }
 
   onSteamButtonPressed() {
@@ -326,7 +336,7 @@ export struct Detail {
       {
         value: "confirm",
         symbolIcon: new SymbolGlyphModifier($r('sys.symbol.list_checkmask')),
-        action: () =>this.onSteamQueryButtonPressed()
+        action: () => this.onSteamQueryButtonPressed()
       }
     ] : [])
   }
