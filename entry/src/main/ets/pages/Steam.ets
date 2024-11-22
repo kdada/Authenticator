@@ -101,7 +101,7 @@ export class SteamClient {
     let clientID = matchResult[2]
 
     let base64 = new util.Base64Helper()
-    let keyData: Uint8Array = base64.decodeSync(sharedSecret, util.Type.BASIC_URL_SAFE)
+    let keyData: Uint8Array = base64.decodeSync(sharedSecret)
     let hmac = cryptoFramework.createMac("SHA256")
     let key = cryptoFramework.createSymKeyGenerator("HMAC").convertKeySync({ data: keyData })
     hmac.initSync(key)
