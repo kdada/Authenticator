@@ -1,33 +1,10 @@
-import { AuthData, SteamAuthData } from "./Base"
-import { distributedKVStore } from "@kit.ArkData";
-import { ComponentContent, SymbolGlyphModifier } from "@kit.ArkUI";
+import { AuthData, AuthDataStore, PromptParams, SteamAuthData } from "./Base"
+import { SymbolGlyphModifier } from "@kit.ArkUI";
 import { JSON, util } from "@kit.ArkTS";
 import { intl } from "@kit.LocalizationKit";
 import { scanBarcode, scanCore } from "@kit.ScanKit";
-import { hilog } from "@kit.PerformanceAnalysisKit";
 import { SteamClient } from "./Steam";
 import { BusinessError } from "@kit.BasicServicesKit";
-
-
-class PromptParams<T> {
-  private ctx?: UIContext
-  private content?: ComponentContent<PromptParams<T>>
-  public data: T
-
-  constructor(ctx: UIContext, builder: WrappedBuilder<[PromptParams<T>]>, data: T) {
-    this.ctx = ctx
-    this.content = new ComponentContent(this.ctx, builder, this);
-    this.data = data
-  }
-
-  open() {
-    this.ctx?.getPromptAction().openCustomDialog(this.content, new Object(this))
-  }
-
-  close() {
-    this.ctx?.getPromptAction().closeCustomDialog(this.content)
-  }
-}
 
 class SteamParams {
   public maFile: string = ""
@@ -37,7 +14,6 @@ class SteamParams {
     this.detail = detail
   }
 }
-
 
 @Builder
 function buildSteamInput(params: PromptParams<SteamParams>) {
@@ -61,8 +37,8 @@ function buildSteamInput(params: PromptParams<SteamParams>) {
           params.close()
         })
         Button('确认').onClick(() => {
-          let data = new SteamAuthData()
           try {
+            let data = new SteamAuthData()
             let authdata = JSON.parse(params.data.maFile, (key: string, val: Object | undefined | null) => {
               if (key == "steam_id") {
                 return (val as bigint).toString()
@@ -88,25 +64,20 @@ function buildSteamInput(params: PromptParams<SteamParams>) {
                 throw new Error(`缺少 ${pair[0]}`)
               }
             })
+
+            let detail = params.data.detail!
+            detail.item.external = JSON.stringify(data)
+            detail.item.account = data.accountName
+            params.close()
+            detail.authDataStore.saveAuthItem(detail.item.id)
+            params.data.detail?.loadSteamAuthData()
+
           } catch (e) {
             params.data.detail?.getUIContext().getPromptAction().showToast({
               message: `认证信息格式错误，请确保内容来自 maFile 文件，${e.toString()}`
             })
             return
           }
-
-          let detail = params.data.detail!
-          detail.item.external = JSON.stringify(data)
-          detail.item.account = data.accountName
-          let authString = JSON.stringify(detail.item)
-          params.close()
-          detail.kvStore.put(`/data/auth/${detail.item.id}`, authString).catch((reason: Object) => {
-            params.data.detail?.getUIContext().getPromptAction().showToast({
-              message: `保存认证信息错误，${reason}`
-            })
-          }).finally(() => {
-            params.data.detail?.loadSteamAuthData()
-          })
         })
       }.width("50%")
       .justifyContent(FlexAlign.SpaceEvenly)
@@ -125,7 +96,7 @@ export struct Detail {
   @State steamAuthData: SteamAuthData = new SteamAuthData()
   @State steamExpirationTime: Date = new Date()
   private steamClient = new SteamClient()
-  @Consume("kvStore") kvStore: distributedKVStore.DeviceKVStore;
+  @Consume("authDataStore") authDataStore: AuthDataStore
   @Consume("safe") safe: boolean;
   @Consume("pageStack") pageStack: NavPathStack;
   private changed: boolean = false
@@ -181,23 +152,23 @@ export struct Detail {
           this.steamAuthData.shardSecret, false, result.originalValue,
           (err) => {
             if (err) {
-              hilog.error(0x0001, '[Scan Steam]',
-                `Failed to approve steam qr code. Code: ${err.name}, message: ${err.message}`);
+              this.getUIContext().getPromptAction().showToast({
+                message: `Steam 登录失败：${err}`
+              })
               return
             }
             this.getUIContext().getPromptAction().showToast({
-              message: "扫码登陆成功"
+              message: "Steam 登录成功"
             })
           })
-        hilog.info(0x0001, '[Scan Steam]',
-          `Succeeded in getting ScanResult by promise with options, result is ${JSON.stringify(result)}`);
-      }).catch((error: BusinessError) => {
-        hilog.error(0x0001, '[Scan Steam]',
-          `Failed to get ScanResult by promise with options. Code: ${error.code}, message: ${error.message}`);
-      });
+        this.getUIContext().getPromptAction().showToast({
+          message: "开始登录 Steam..."
+        })
+      })
     } catch (error) {
-      hilog.error(0x0001, '[Scan Steam]',
-        `Failed to startScanForResult. Code: ${error.code}, message: ${error.message}`);
+      this.getUIContext().getPromptAction().showToast({
+        message: `扫码失败：${error}`
+      })
     }
   }
 
@@ -343,8 +314,7 @@ export struct Detail {
 
   onSelfBackPress(): boolean {
     if (this.changed) {
-      let authString = JSON.stringify(this.item)
-      this.kvStore.put(`/data/auth/${this.item.id}`, authString)
+      this.authDataStore.saveAuthItem(this.item.id)
     }
     return false
   }
