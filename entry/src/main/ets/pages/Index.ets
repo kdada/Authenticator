@@ -1,7 +1,7 @@
 import { SymbolGlyphModifier } from "@ohos.arkui.modifier"
 import { scanCore, scanBarcode } from '@kit.ScanKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { BusinessError, systemDateTime } from '@kit.BasicServicesKit';
+import { systemDateTime } from '@kit.BasicServicesKit';
 import { cryptoFramework } from '@kit.CryptoArchitectureKit';
 import { Setting } from './Setting';
 import { userAuth } from '@kit.UserAuthenticationKit';
@@ -17,6 +17,7 @@ import { AddSteam } from "./AddSteam";
 @Component
 struct Index {
   @State items: AuthData[] = [];
+  @State showTokens: Record<number, boolean> = [];
   @State progress: number = 0;
   @Provide("pageStack") pageStack: NavPathStack = new NavPathStack();
   @Provide("authDataStore") authDataStore: AuthDataStore = new AuthDataStore((items) => {
@@ -24,6 +25,7 @@ struct Index {
   })
   @Provide("safe") safe: boolean = false;
   @StorageProp("enableSafeMode") enableSafeMode: boolean = false
+  @StorageProp("hideToken") hideToken: boolean = false
   private timer?: number;
 
   aboutToAppear(): void {
@@ -32,8 +34,6 @@ struct Index {
     this.timer = setInterval(() => {
       this.progress = systemDateTime.getTime(false) / 1000 % 30
       this.authDataStore.refreshAllPassword()
-      this.items = []
-      this.items = this.authDataStore.items
     }, 1000)
   }
 
@@ -171,27 +171,48 @@ struct Index {
                   Text(item.alias)
                     .fontSize(20)
                     .fontWeight(FontWeight.Bold)
-                  Text(item.account)
+                  Text(this.safe ? item.account : "******")
                     .fontSize(10)
                 }
                 .alignItems(HorizontalAlign.Start)
                 .width("55%")
 
-                Text(this.safe ? item.password : "******")
+                Text((this.safe && (!this.hideToken || this.showTokens[item.id])) ? item.password : "******")
                   .fontSize(20)
                   .fontWeight(FontWeight.Bold)
+                  .onClick(() => {
+                    if (!this.safe) {
+                      this.getUIContext().getPromptAction().showToast({
+                        message: "已启用安全模式，请先解锁"
+                      })
+                      return
+                    }
+                    if (!this.hideToken) {
+                      this.pageStack.pushPathByName("Detail", item)
+                      return
+                    }
+                    this.showTokens[item.id] = !!!this.showTokens[item.id]
+                  })
               }
               .width("100%")
-              .onClick(() => this.pageStack.pushPathByName("Detail", item))
+              .onClick(() => {
+                if (!this.safe) {
+                  this.getUIContext().getPromptAction().showToast({
+                    message: "已启用安全模式，请先解锁"
+                  })
+                  return
+                }
+                this.pageStack.pushPathByName("Detail", item)
+              })
             }
             .swipeAction({ end: this.deleteButton(item.id) })
             .borderColor($r("app.color.item_separator_color"))
             .borderWidth({ bottom: 1 })
-          }, (item: AuthData, index: number) => item.id.toString() + "-" + item.password)
+          }, (item: AuthData) => item.id.toString() + "-" + item.alias + "-" + item.account + "-" + item.password)
         }
       }
       .navDestination(this.PagesMap)
-      .menus([
+      .menus(this.safe ? [
         {
           value: "add",
           symbolIcon: new SymbolGlyphModifier($r('sys.symbol.plus')),
@@ -205,7 +226,21 @@ struct Index {
         {
           value: "setting",
           symbolIcon: new SymbolGlyphModifier($r('sys.symbol.gearshape')),
-          action: () => this.pageStack.pushPathByName("Setting", undefined)
+          action: () => {
+            if (!this.safe) {
+              this.getUIContext().getPromptAction().showToast({
+                message: "已启用安全模式，请先解锁"
+              })
+              return
+            }
+            this.pageStack.pushPathByName("Setting", undefined)
+          }
+        },
+      ] : [
+        {
+          value: "unlock",
+          symbolIcon: new SymbolGlyphModifier($r('sys.symbol.lock')),
+          action: () => this.onPageShow()
         },
       ])
       .title($r("app.string.EntryAbility_label"))
@@ -227,16 +262,34 @@ struct Index {
     .width(60)
     .height("100%")
     .onClick((event) => {
+      if (!this.safe) {
+        this.getUIContext().getPromptAction().showToast({
+          message: "已启用安全模式，请先解锁"
+        })
+        return
+      }
       this.authDataStore.removeAuthItem(id)
       this.items = this.authDataStore.items
     })
   }
 
   onAddButtonPressed() {
+    if (!this.safe) {
+      this.getUIContext().getPromptAction().showToast({
+        message: "已启用安全模式，请先解锁"
+      })
+      return
+    }
     this.pageStack.pushPathByName("Add", undefined)
   }
 
   onScanButtonPressed() {
+    if (!this.safe) {
+      this.getUIContext().getPromptAction().showToast({
+        message: "已启用安全模式，请先解锁"
+      })
+      return
+    }
     let options: scanBarcode.ScanOptions =
       { scanTypes: [scanCore.ScanType.ALL], enableMultiMode: true, enableAlbum: true };
     try {

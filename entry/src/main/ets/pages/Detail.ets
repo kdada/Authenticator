@@ -4,7 +4,6 @@ import { JSON, util } from "@kit.ArkTS";
 import { intl } from "@kit.LocalizationKit";
 import { scanBarcode, scanCore } from "@kit.ScanKit";
 import { SteamClient } from "./Steam";
-import { BusinessError } from "@kit.BasicServicesKit";
 
 class SteamParams {
   public maFile: string = ""
@@ -99,7 +98,6 @@ export struct Detail {
   @Consume("authDataStore") authDataStore: AuthDataStore
   @Consume("safe") safe: boolean;
   @Consume("pageStack") pageStack: NavPathStack;
-  private changed: boolean = false
   private timer?: number;
 
   aboutToAppear(): void {
@@ -108,7 +106,7 @@ export struct Detail {
       let temp = this.item
       this.item = new AuthData()
       this.item = temp
-    }, 1000)
+    }, 500)
   }
 
   aboutToDisappear(): void {
@@ -254,8 +252,10 @@ export struct Detail {
             .type(InputType.Normal)
             .maxLength(20)
             .onChange((str) => {
-              this.item.alias = str;
-              this.changed = true
+              if (str != this.item.alias) {
+                this.item.alias = str;
+                this.authDataStore.saveAuthItem(this.item.id)
+              }
             })
         }
         .height(40)
@@ -310,12 +310,5 @@ export struct Detail {
         action: () => this.onSteamQueryButtonPressed()
       }
     ] : [])
-  }
-
-  onSelfBackPress(): boolean {
-    if (this.changed) {
-      this.authDataStore.saveAuthItem(this.item.id)
-    }
-    return false
   }
 }

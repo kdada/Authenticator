@@ -39,6 +39,7 @@ export default class EntryAbility extends UIAbility {
       hilog.info(0x0000, 'testTag', 'Succeeded in loading the content.');
       PersistentStorage.persistProp("enableAutoDarkMode", true)
       PersistentStorage.persistProp("enableSafeMode", false)
+      PersistentStorage.persistProp("hideToken", false)
       if (AppStorage.get("enableAutoDarkMode")) {
         this.context.getApplicationContext().setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
       } else {

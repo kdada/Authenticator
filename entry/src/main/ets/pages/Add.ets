@@ -80,41 +80,41 @@ export struct Add {
           }
           .margin(10)
 
-          Column() {
-            Row() {
-              RelativeContainer() {
-                Text("添加 Steam 令牌")
-                  .fontWeight(FontWeight.Bold)
-                  .padding({ left: 10 })
-                  .alignRules({
-                    left: { anchor: "__container__", align: HorizontalAlign.Start },
-                    center: { anchor: "__container__", align: VerticalAlign.Center },
-                  })
+          //  Column() {
+          //    Row() {
+          //      RelativeContainer() {
+          //        Text("添加 Steam 令牌")
+          //          .fontWeight(FontWeight.Bold)
+          //          .padding({ left: 10 })
+          //          .alignRules({
+          //            left: { anchor: "__container__", align: HorizontalAlign.Start },
+          //            center: { anchor: "__container__", align: VerticalAlign.Center },
+          //          })
 
-                SymbolGlyph($r("sys.symbol.chevron_right"))
-                  .fontSize(30)
-                  .padding({ right: 10 })
-                  .fontColor([$r("app.color.vendor_icon_color")])
-                  .alignRules({
-                    right: { anchor: "__container__", align: HorizontalAlign.End },
-                    center: { anchor: "__container__", align: VerticalAlign.Center },
-                  })
-              }
-            }
-            .height(40)
-            .width("100%")
-            .onClick(() => {
-              this.pageStack.pushPathByName("AddSteam", undefined)
-            })
+          //        SymbolGlyph($r("sys.symbol.chevron_right"))
+          //          .fontSize(30)
+          //          .padding({ right: 10 })
+          //          .fontColor([$r("app.color.vendor_icon_color")])
+          //          .alignRules({
+          //            right: { anchor: "__container__", align: HorizontalAlign.End },
+          //            center: { anchor: "__container__", align: VerticalAlign.Center },
+          //          })
+          //      }
+          //    }
+          //    .height(40)
+          //    .width("100%")
+          //    .onClick(() => {
+          //      this.pageStack.pushPathByName("AddSteam", undefined)
+          //    })
 
-            Row() {
-              Text("支持 5 位令牌，扫码登陆和交易确认")
-                .padding({ left: 20 })
-                .fontSize(12)
-            }
-            .width("100%")
-          }
-          .margin(10)
+          //    Row() {
+          //      Text("支持 5 位令牌，扫码登陆和交易确认")
+          //        .padding({ left: 20 })
+          //        .fontSize(12)
+          //    }
+          //    .width("100%")
+          //  }
+          //  .margin(10)
         }
       }
     }
@@ -190,12 +190,13 @@ export struct AddSecret {
         if (this.isOtherProvider) {
           Row() {
             TextInput({ text: this.provider, placeholder: "请输入提供方名称" })
-              .width("90%")
+              .width("60%")
               .fontWeight(FontWeight.Bold)
               .textAlign(TextAlign.End)
               .maxLength(50)
               .onChange((v) => this.provider = v.trim())
           }
+          .alignSelf(ItemAlign.End)
           .margin({ bottom: 10 })
         }
 
@@ -204,7 +205,7 @@ export struct AddSecret {
             .width("30%")
             .fontWeight(FontWeight.Bold)
             .textAlign(TextAlign.Start)
-          TextInput({ text: this.account })
+          TextInput({ text: this.account, placeholder: "用户名或邮箱" })
             .width("60%")
             .fontWeight(FontWeight.Bold)
             .textAlign(TextAlign.End)
@@ -220,7 +221,7 @@ export struct AddSecret {
             .width("30%")
             .fontWeight(FontWeight.Bold)
             .textAlign(TextAlign.Start)
-          TextInput({ text: this.secret })
+          TextInput({ text: this.secret, placeholder: "由 A-Z，2-7 组成的字符串" })
             .width("60%")
             .fontWeight(FontWeight.Bold)
             .textAlign(TextAlign.End)
@@ -285,7 +286,7 @@ export struct AddSecret {
 
 @Component
 export struct AddUri {
-  private uri: string = "";
+  @State uri: string = "";
   @Consume("pageStack") pageStack: NavPathStack;
   @Consume("authDataStore") authDataStore: AuthDataStore;
 
@@ -319,6 +320,7 @@ export struct AddUri {
                 }
               })
               .width(150)
+              .enabled(this.uri != "")
           }
           .justifyContent(FlexAlign.SpaceEvenly)
         }
