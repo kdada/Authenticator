@@ -1,8 +1,11 @@
-import { AuthDataStore } from "./Base"
+import { AuthData, AuthDataStore } from "./Base"
+import { picker, fileIo as fs } from "@kit.CoreFileKit";
+import { util } from "@kit.ArkTS";
 
 @Component
 export struct Add {
   @Consume("pageStack") pageStack: NavPathStack;
+  @Consume("authDataStore") authDataStore: AuthDataStore
 
   build() {
     NavDestination() {
@@ -73,6 +76,73 @@ export struct Add {
 
             Row() {
               Text("TOTP URI 是一串以 otpauth://totp/ 开头的链接，例如：otpauth://totp/Example:alice@example.com?secret=ABCDEFGHIJ234567&issuer=Example")
+                .padding({ left: 20 })
+                .fontSize(12)
+            }
+            .width("100%")
+          }
+          .margin(10)
+
+          Column() {
+            Row() {
+              RelativeContainer() {
+                Text("从令牌密钥文件（*.atsf）恢复")
+                  .fontWeight(FontWeight.Bold)
+                  .padding({ left: 10 })
+                  .alignRules({
+                    left: { anchor: "__container__", align: HorizontalAlign.Start },
+                    center: { anchor: "__container__", align: VerticalAlign.Center },
+                  })
+
+                SymbolGlyph($r("sys.symbol.chevron_right"))
+                  .fontSize(30)
+                  .padding({ right: 10 })
+                  .fontColor([$r("app.color.vendor_icon_color")])
+                  .alignRules({
+                    right: { anchor: "__container__", align: HorizontalAlign.End },
+                    center: { anchor: "__container__", align: VerticalAlign.Center },
+                  })
+              }
+            }
+            .height(40)
+            .width("100%")
+            .onClick(() => {
+              let selectOptions = new picker.DocumentSelectOptions()
+              selectOptions.maxSelectNumber = 1
+              selectOptions.fileSuffixFilters = [".atsf"]
+              let viewPicker = new picker.DocumentViewPicker(getContext(this))
+              viewPicker.select(selectOptions).then((uris) => {
+                if (uris.length <= 0) {
+                  return
+                }
+                if (uris.length != 1) {
+                  this.getUIContext().getPromptAction().showToast({
+                    message: "请选择一个令牌密钥文件"
+                  })
+                  return
+                }
+                try {
+                  let file = fs.openSync(uris[0], fs.OpenMode.READ_ONLY)
+                  let fileStat = fs.statSync(file.fd)
+                  let buffer = new ArrayBuffer(fileStat.size)
+                  fs.readSync(file.fd, buffer)
+                  fs.close(file)
+                  let data = util.TextDecoder.create("utf-8").decodeToString(new Uint8Array(buffer))
+                  this.authDataStore.recoverAuthItem(data)
+                  this.getUIContext().getPromptAction().showToast({
+                    message: "恢复完成"
+                  })
+                } catch (e) {
+                  this.getUIContext().getPromptAction().showToast({
+                    message: `恢复错误：${e}`
+                  })
+                }
+                return
+              })
+            })
+
+            Row() {
+              Text("令牌密钥文件为 *.atsf，可以从当前 App 的设置中导出。对令牌密钥文件做任何更改都可能导致无法恢复。\n注意：恢复操作不会覆盖已添加到 App 的令牌密钥，请自行删除重复的条目")
                 .padding({ left: 20 })
                 .fontSize(12)
             }

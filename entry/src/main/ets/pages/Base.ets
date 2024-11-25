@@ -208,6 +208,31 @@ export class AuthDataStore {
     this.items.push(authdata)
     this.onChanged(this.items)
   }
+
+  recoverAuthItem(data: string) {
+    let result = JSON.parse(data) as AuthData[]
+    if (!result) {
+      throw new Error("未知的文件格式")
+    }
+    for (let index = 0; index < result.length; index++) {
+      const element = result[index];
+      Object.entries(element).forEach((pair: [string, string]) => {
+        if (pair[1] == undefined) {
+          throw new Error(`第 ${index} 个令牌密钥缺少 ${pair[0]}`)
+        }
+      })
+    }
+    for (let index = 0; index < result.length; index++) {
+      const element = result[index];
+      element.id = this.next++
+      if (this.kvStore) {
+        let authString = JSON.stringify(element)
+        this.kvStore.put(`/data/auth/${element.id}`, authString)
+      }
+      this.items.push(element)
+    }
+    this.onChanged(this.items)
+  }
 }
 
 export class PromptParams<T> {

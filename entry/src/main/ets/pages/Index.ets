@@ -11,7 +11,7 @@ import { SteamConfirmationList } from './SteamConfirmationList';
 import { SteamConfirmationDetail } from './SteamConfirmationDetail';
 import { Confirmation } from './Steam';
 import { Add, AddSecret, AddUri } from "./Add";
-import { AddSteam } from "./AddSteam";
+import { AddSteamToken } from "./AddSteam";
 
 @Entry
 @Component
@@ -96,8 +96,8 @@ struct Index {
       AddUri()
     } else if (name == "AddSecret") {
       AddSecret()
-    } else if (name == "AddSteam") {
-      AddSteam()
+    } else if (name == "AddSteamToken") {
+      AddSteamToken()
     } else if (name == 'Setting') {
       Setting()
     } else if (name == 'Detail') {
@@ -160,55 +160,73 @@ struct Index {
   build() {
     Column() {
       Navigation(this.pageStack) {
-        Progress({ value: this.progress, total: 29, type: ProgressType.Linear })
-          .width("100%").height(5)
-        List() {
-          ForEach(this.items, (item: AuthData) => {
-            ListItem() {
-              Row() {
-                this.Logo(item.issuer)
-                Column() {
-                  Text(item.alias)
+        if (this.items.length <= 0) {
+          RelativeContainer() {
+            Column() {
+              SymbolGlyph($r("sys.symbol.info_shield"))
+                .fontSize(35)
+              Text("还没有添加过令牌密钥\n请点击右上角的加号或扫码按钮添加")
+                .fontWeight(FontWeight.Bold)
+                .padding(20)
+                .textAlign(TextAlign.Center)
+                .lineHeight(40)
+            }
+            .alignRules({
+              center: { anchor: "__container__", align: VerticalAlign.Center },
+              middle: { anchor: "__container__", align: HorizontalAlign.Center },
+            })
+          }
+        } else {
+          Progress({ value: this.progress, total: 29, type: ProgressType.Linear })
+            .width("100%").height(5)
+          List() {
+            ForEach(this.items, (item: AuthData) => {
+              ListItem() {
+                Row() {
+                  this.Logo(item.issuer)
+                  Column() {
+                    Text(item.alias)
+                      .fontSize(20)
+                      .fontWeight(FontWeight.Bold)
+                    Text(this.safe ? item.account : "******")
+                      .fontSize(10)
+                  }
+                  .alignItems(HorizontalAlign.Start)
+                  .width("55%")
+
+                  Text((this.safe && (!this.hideToken || this.showTokens[item.id])) ? item.password : "******")
                     .fontSize(20)
                     .fontWeight(FontWeight.Bold)
-                  Text(this.safe ? item.account : "******")
-                    .fontSize(10)
+                    .onClick(() => {
+                      if (!this.safe) {
+                        this.getUIContext().getPromptAction().showToast({
+                          message: "已启用安全模式，请先解锁"
+                        })
+                        return
+                      }
+                      if (!this.hideToken) {
+                        this.pageStack.pushPathByName("Detail", item)
+                        return
+                      }
+                      this.showTokens[item.id] = !!!this.showTokens[item.id]
+                    })
                 }
-                .alignItems(HorizontalAlign.Start)
-                .width("55%")
-
-                Text((this.safe && (!this.hideToken || this.showTokens[item.id])) ? item.password : "******")
-                  .fontSize(20)
-                  .fontWeight(FontWeight.Bold)
-                  .onClick(() => {
-                    if (!this.safe) {
-                      this.getUIContext().getPromptAction().showToast({
-                        message: "已启用安全模式，请先解锁"
-                      })
-                      return
-                    }
-                    if (!this.hideToken) {
-                      this.pageStack.pushPathByName("Detail", item)
-                      return
-                    }
-                    this.showTokens[item.id] = !!!this.showTokens[item.id]
-                  })
+                .width("100%")
+                .onClick(() => {
+                  if (!this.safe) {
+                    this.getUIContext().getPromptAction().showToast({
+                      message: "已启用安全模式，请先解锁"
+                    })
+                    return
+                  }
+                  this.pageStack.pushPathByName("Detail", item)
+                })
               }
-              .width("100%")
-              .onClick(() => {
-                if (!this.safe) {
-                  this.getUIContext().getPromptAction().showToast({
-                    message: "已启用安全模式，请先解锁"
-                  })
-                  return
-                }
-                this.pageStack.pushPathByName("Detail", item)
-              })
-            }
-            .swipeAction({ end: this.deleteButton(item.id) })
-            .borderColor($r("app.color.item_separator_color"))
-            .borderWidth({ bottom: 1 })
-          }, (item: AuthData) => item.id.toString() + "-" + item.alias + "-" + item.account + "-" + item.password)
+              .swipeAction({ end: this.deleteButton(item.id) })
+              .borderColor($r("app.color.item_separator_color"))
+              .borderWidth({ bottom: 1 })
+            }, (item: AuthData) => item.id.toString() + "-" + item.alias + "-" + item.account + "-" + item.password)
+          }
         }
       }
       .navDestination(this.PagesMap)
