@@ -4,6 +4,8 @@ import { cryptoFramework } from '@kit.CryptoArchitectureKit';
 import { buffer, JSON, uri } from '@kit.ArkTS';
 import { distributedKVStore } from '@kit.ArkData';
 import { kvManager } from '../entryability/EntryAbility';
+import * as steamapi from './steamapi/custom'
+import * as steam2faapi from './steamapi/service_twofactor'
 
 export class AuthData {
   id: number = 0
@@ -29,6 +31,17 @@ export class SteamAuthData {
   public secret1: string = ""
   public accessToken: string = ""
   public refreshToken: string = ""
+}
+
+export class SteamAccountData {
+  auth?: steamapi.CAuthentication_BeginAuthSessionViaCredentials_Response
+  confirmation?: steamapi.CAuthentication_AllowedConfirmation
+  tokens?: steamapi.CAuthentication_PollAuthSessionStatus_Response
+  deviceId: string = ""
+  authenticator?: steam2faapi.CTwoFactor_AddAuthenticator_Response
+  finalizeAuthenticator?: steam2faapi.CTwoFactor_FinalizeAddAuthenticator_Response
+  status?: steam2faapi.CTwoFactor_Status_Response
+  account?: steam2faapi.CTwoFactor_RemoveAuthenticatorViaChallengeContinue_Response
 }
 
 export class AuthDataStore {
@@ -63,7 +76,7 @@ export class AuthDataStore {
     })
   }
 
-  base32Decode(secret: string): Uint8Array {
+  static base32Decode(secret: string): Uint8Array {
     let base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
     let base32Lookup: Record<string, number> = {}
     for (let i = 0; i < base32Chars.length; i++) {
@@ -82,7 +95,7 @@ export class AuthDataStore {
     return bytes
   }
 
-  numToUint8Array(num: number): Uint8Array {
+  static numToUint8Array(num: number): Uint8Array {
     let arr = new Uint8Array(8);
     for (let i = 7; i >= 0; i--) {
       arr[i] = num & 0xff;
@@ -91,11 +104,9 @@ export class AuthDataStore {
     return arr;
   }
 
-  generatePassword(authdata: AuthData): string {
-    let keyData: Uint8Array = this.base32Decode(authdata.secret)
-    let seconds = systemDateTime.getTime(false) / 1000
+  static calculatePassword(keyData: Uint8Array, seconds: number, digits: number): string {
     let timeStep = Math.floor(seconds / 30)
-    let timeData: Uint8Array = this.numToUint8Array(timeStep)
+    let timeData: Uint8Array = AuthDataStore.numToUint8Array(timeStep)
 
     let hmac = cryptoFramework.createMac("SHA1")
     let key = cryptoFramework.createSymKeyGenerator("HMAC").convertKeySync({ data: keyData })
@@ -109,9 +120,9 @@ export class AuthDataStore {
     buf[2] = result.data[offset+2] & 0xff
     buf[3] = result.data[offset+3] & 0xff
     let value = buf.readUInt32BE()
-    if (authdata.digits != 5) {
+    if (digits != 5) {
       // TOTP 标准算法
-      return (value % Math.pow(10, authdata.digits)).toString().padStart(authdata.digits, "0")
+      return (value % Math.pow(10, digits)).toString().padStart(digits, "0")
     }
     // Steam 算法
     // [50, 51, 52, 53, 54, 55, 56, 57, 66, 67, 68, 70, 71, 72, 74, 75, 77, 78, 80, 81, 82, 84, 86, 87, 88, 89]
@@ -124,6 +135,12 @@ export class AuthDataStore {
       value = Math.floor(value / codes.length)
     }
     return steamResult
+  }
+
+  generatePassword(authdata: AuthData): string {
+    let keyData: Uint8Array = AuthDataStore.base32Decode(authdata.secret)
+    let seconds = systemDateTime.getTime(false) / 1000
+    return AuthDataStore.calculatePassword(keyData, seconds, authdata.digits)
   }
 
   refreshAllPassword() {
@@ -231,6 +248,19 @@ export class AuthDataStore {
       }
       this.items.push(element)
     }
+    this.onChanged(this.items)
+  }
+
+  addOneAuthItem(data: AuthData, externalObject?: Object) {
+    data.id = this.next++
+    if (externalObject) {
+      data.external = JSON.stringify(externalObject)
+    }
+    if (this.kvStore) {
+      let authString = JSON.stringify(data)
+      this.kvStore.put(`/data/auth/${data.id}`, authString)
+    }
+    this.items.push(data)
     this.onChanged(this.items)
   }
 }

@@ -129,7 +129,6 @@ export struct Add {
                   fs.close(file)
                   let data = util.TextDecoder.create("utf-8").decodeToString(new Uint8Array(buffer))
                   this.authDataStore.recoverAuthItem(data)
-                  this.pageStack.popToIndex(-1)
                   this.getUIContext().getPromptAction().showToast({
                     message: "恢复完成"
                   })
@@ -144,6 +143,42 @@ export struct Add {
 
             Row() {
               Text("令牌密钥文件为 *.atsf，可以从当前 App 的设置中导出。对令牌密钥文件做任何更改都可能导致无法恢复。\n注意：恢复操作不会覆盖已添加到 App 的令牌密钥，请自行删除重复的条目")
+                .padding({ left: 20 })
+                .fontSize(12)
+            }
+            .width("100%")
+          }
+          .margin(10)
+
+          Column() {
+            Row() {
+              RelativeContainer() {
+                Text("添加 Steam 令牌")
+                  .fontWeight(FontWeight.Bold)
+                  .padding({ left: 10 })
+                  .alignRules({
+                    left: { anchor: "__container__", align: HorizontalAlign.Start },
+                    center: { anchor: "__container__", align: VerticalAlign.Center },
+                  })
+
+                SymbolGlyph($r("sys.symbol.chevron_right"))
+                  .fontSize(30)
+                  .padding({ right: 10 })
+                  .fontColor([$r("app.color.vendor_icon_color")])
+                  .alignRules({
+                    right: { anchor: "__container__", align: HorizontalAlign.End },
+                    center: { anchor: "__container__", align: VerticalAlign.Center },
+                  })
+              }
+            }
+            .height(40)
+            .width("100%")
+            .onClick(() => {
+              this.pageStack.pushPathByName("AddSteamToken", undefined)
+            })
+
+            Row() {
+              Text("支持 5 位令牌，扫码登陆和交易确认")
                 .padding({ left: 20 })
                 .fontSize(12)
             }
@@ -303,7 +338,7 @@ export struct AddSecret {
                 let uri =
                   `otpauth://totp/${encodedProvider}:${encodedAccount}?secret=${this.secret}&issuer=${encodedProvider}&digits=${this.tokenLength}`
                 this.authDataStore.addAuthItem(uri)
-                this.pageStack.popToIndex(-1)
+                this.pageStack.clear()
               } catch (e) {
                 this.getUIContext().getPromptAction().showToast({
                   message: `TOTP 错误：${e}`
@@ -347,7 +382,7 @@ export struct AddUri {
                 }
                 try {
                   this.authDataStore.addAuthItem(this.uri)
-                  this.pageStack.popToIndex(-1)
+                  this.pageStack.clear()
                 } catch (e) {
                   this.getUIContext().getPromptAction().showToast({
                     message: `TOTP URI 错误：${e}`

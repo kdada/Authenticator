@@ -6,11 +6,15 @@ import { cryptoFramework } from '@kit.CryptoArchitectureKit';
 import { Setting } from './Setting';
 import { userAuth } from '@kit.UserAuthenticationKit';
 import { Detail } from './Detail';
-import { AuthData, AuthDataStore } from './Base';
+import { AuthData, AuthDataStore, SteamAccountData } from './Base';
 import { SteamConfirmationList } from './SteamConfirmationList';
 import { SteamConfirmationDetail } from './SteamConfirmationDetail';
 import { Confirmation } from './Steam';
 import { Add, AddSecret, AddUri } from "./Add";
+import { AddSteamToken, SteamConfirmLink,
+  SteamConfirmTransferAuthenticator,
+  SteamLink, SteamLogin, SteamMFALogin,
+  SteamTransferAuthenticator } from "./AddSteam";
 
 @Entry
 @Component
@@ -95,6 +99,20 @@ struct Index {
       AddUri()
     } else if (name == "AddSecret") {
       AddSecret()
+    } else if (name == "AddSteamToken") {
+      AddSteamToken()
+    } else if (name == "SteamLogin") {
+      SteamLogin()
+    } else if (name == "SteamMFALogin") {
+      SteamMFALogin({accountData: param as SteamAccountData})
+    } else if (name == "SteamLink") {
+      SteamLink({accountData: param as SteamAccountData})
+    } else if (name == "SteamConfirmLink") {
+      SteamConfirmLink({accountData: param as SteamAccountData})
+    } else if (name == "SteamTransferAuthenticator") {
+      SteamTransferAuthenticator({accountData: param as SteamAccountData})
+    } else if (name == "SteamConfirmTransferAuthenticator") {
+      SteamConfirmTransferAuthenticator({accountData: param as SteamAccountData})
     } else if (name == 'Setting') {
       Setting()
     } else if (name == 'Detail') {
