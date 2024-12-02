@@ -283,8 +283,10 @@ export class SteamClient {
         expectDataType: http.HttpDataType.STRING,
       }, (err, resp) => {
         callback(err)
-        if (!resp.result["success"]) {
-          callback(new Error(resp.result["message"]))
+        let eResult = resp.header["x-eresult"] as string
+        if (!isOK(eResult)) {
+          let code = getEResultCode(eResult)
+          callback(new Error(code))
           return
         }
       })
