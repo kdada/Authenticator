@@ -367,6 +367,9 @@ export struct AddUri {
           Text("输入 TOTP URI")
             .fontSize(30)
             .fontWeight(FontWeight.Bold)
+            .margin({ bottom: 10 })
+          Text("如果需要同时添加多个，每行一个 URI")
+            .fontSize(14)
             .margin({ bottom: 20 })
           TextArea({ text: "", placeholder: "otpauth://totp/xxx?secret=yyy" })
             .height(150)
@@ -380,14 +383,25 @@ export struct AddUri {
                 if (this.uri == "") {
                   return
                 }
-                try {
-                  this.authDataStore.addAuthItem(this.uri)
-                  this.pageStack.clear()
-                } catch (e) {
-                  this.getUIContext().getPromptAction().showToast({
-                    message: `TOTP URI 错误：${e}`
-                  })
+
+                let uris = this.uri.split("\n")
+                let count = 0
+                for (let i = 0; i < uris.length; i++) {
+                  let uri = uris[i].trim()
+                  if (uri == "") {
+                    continue
+                  }
+                  try {
+                    this.authDataStore.addAuthItem(uri)
+                    count++
+                  } catch (e) {
+                    this.getUIContext().getPromptAction().showToast({
+                      message: `已添加 ${count} 个，第 ${i + 1} 行的 TOTP URI 错误：${e}`
+                    })
+                    return
+                  }
                 }
+                this.pageStack.clear()
               })
               .width(150)
               .enabled(this.uri != "")
