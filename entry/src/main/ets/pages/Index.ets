@@ -11,10 +11,15 @@ import { SteamConfirmationList } from './SteamConfirmationList';
 import { SteamConfirmationDetail } from './SteamConfirmationDetail';
 import { Confirmation } from './Steam';
 import { Add, AddSecret, AddUri } from "./Add";
-import { AddSteamToken, SteamConfirmLink,
+import {
+  AddSteamToken,
+  SteamConfirmLink,
   SteamConfirmTransferAuthenticator,
-  SteamLink, SteamLogin, SteamMFALogin,
-  SteamTransferAuthenticator } from "./AddSteam";
+  SteamLink,
+  SteamLogin,
+  SteamMFALogin,
+  SteamTransferAuthenticator
+} from "./AddSteam";
 
 @Entry
 @Component
@@ -104,15 +109,15 @@ struct Index {
     } else if (name == "SteamLogin") {
       SteamLogin()
     } else if (name == "SteamMFALogin") {
-      SteamMFALogin({accountData: param as SteamAccountData})
+      SteamMFALogin({ accountData: param as SteamAccountData })
     } else if (name == "SteamLink") {
-      SteamLink({accountData: param as SteamAccountData})
+      SteamLink({ accountData: param as SteamAccountData })
     } else if (name == "SteamConfirmLink") {
-      SteamConfirmLink({accountData: param as SteamAccountData})
+      SteamConfirmLink({ accountData: param as SteamAccountData })
     } else if (name == "SteamTransferAuthenticator") {
-      SteamTransferAuthenticator({accountData: param as SteamAccountData})
+      SteamTransferAuthenticator({ accountData: param as SteamAccountData })
     } else if (name == "SteamConfirmTransferAuthenticator") {
-      SteamConfirmTransferAuthenticator({accountData: param as SteamAccountData})
+      SteamConfirmTransferAuthenticator({ accountData: param as SteamAccountData })
     } else if (name == 'Setting') {
       Setting()
     } else if (name == 'Detail') {
@@ -126,36 +131,43 @@ struct Index {
 
   @Builder
   Logo(issuer: string) {
-    if (issuer == "Google") {
+    if (issuer.toLowerCase() == "google") {
       Image($rawfile("Google.png"))
         .width(40)
         .padding(5)
         .margin(10)
         .backgroundColor($r("app.color.vendor_background_color"))
         .borderRadius(20)
-    } else if (issuer == "Microsoft") {
+    } else if (issuer.toLowerCase() == "microsoft") {
       Image($rawfile("Microsoft.png"))
         .width(40)
         .padding(5)
         .margin(10)
         .backgroundColor($r("app.color.vendor_background_color"))
         .borderRadius(20)
-    } else if (issuer == "GitHub") {
+    } else if (issuer.toLowerCase() == "github") {
       Image($rawfile("Github.png"))
         .width(40)
         .padding(5)
         .margin(10)
         .backgroundColor($r("app.color.vendor_background_color"))
         .borderRadius(20)
-    } else if (issuer == "Gitlab") {
+    } else if (issuer.toLowerCase() == "gitlab") {
       Image($rawfile("Gitlab.png"))
         .width(40)
         .padding(5)
         .margin(10)
         .backgroundColor($r("app.color.vendor_background_color"))
         .borderRadius(20)
-    } else if (issuer == "Steam") {
+    } else if (issuer.toLowerCase() == "steam") {
       Image($rawfile("Steam.png"))
+        .width(40)
+        .padding(5)
+        .margin(10)
+        .backgroundColor($r("app.color.vendor_background_color"))
+        .borderRadius(20)
+    } else if (issuer.toLowerCase() == "huawei") {
+      Image($rawfile("Huawei.png"))
         .width(40)
         .padding(5)
         .margin(10)
