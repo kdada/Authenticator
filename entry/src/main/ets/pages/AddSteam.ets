@@ -59,7 +59,12 @@ export struct SteamLogin {
       RelativeContainer() {
         Column() {
           Row() {
+            Text("请输入 Steam 账户名称和密码")
+              .fontWeight(FontWeight.Bold)
+          }
+          .margin({ bottom: 10 })
 
+          Row() {
             Text("账户名称")
               .width("30%")
               .fontWeight(FontWeight.Bold)
@@ -189,7 +194,7 @@ export struct SteamMFALogin {
         } else if (this.accountData.confirmation!.confirmationType ==
         steamapi.EAuthSessionGuardType.k_EAuthSessionGuardType_DeviceCode) {
           Column() {
-            Text("Steam 启用了多重身份验证，请输出令牌")
+            Text("Steam 启用了多重身份验证，请从已绑定的身份验证器获取令牌并输入")
               .fontWeight(FontWeight.Bold)
               .margin(10)
             TextInput()
@@ -205,7 +210,7 @@ export struct SteamMFALogin {
         } else if (this.accountData.confirmation!.confirmationType ==
         steamapi.EAuthSessionGuardType.k_EAuthSessionGuardType_EmailCode) {
           Column() {
-            Text("Steam 启用了多重身份验证，令牌已通过邮件发送，请输出令牌")
+            Text("Steam 启用了多重身份验证，令牌已通过邮件发送，请输入令牌")
               .fontWeight(FontWeight.Bold)
               .margin(10)
             TextInput()
