@@ -114,7 +114,7 @@ export struct SteamLogin {
               this.loggingIn = false
               if (err) {
                 this.getUIContext().getPromptAction().showToast({
-                  message: `Steam 登录失败：${err}`
+                  message: `Steam 登录失败：${err.message}`
                 })
                 return
               }
@@ -141,7 +141,7 @@ export struct SteamLogin {
                   this.loggingIn = false
                   if (err) {
                     this.getUIContext().getPromptAction().showToast({
-                      message: `Steam 认证信息获取失败：${err}`
+                      message: `Steam 认证信息获取失败：${err.message}`
                     })
                     return
                   }
@@ -251,7 +251,7 @@ export struct SteamMFALogin {
                 this.accountData.confirmation!.confirmationType, this.steamToken, (err) => {
                   if (err) {
                     this.getUIContext().getPromptAction().showToast({
-                      message: `Steam 登录失败：${err}`
+                      message: `Steam 登录失败：${err.message}`
                     })
                     return
                   }
@@ -263,7 +263,7 @@ export struct SteamMFALogin {
                     this.loggingIn = false
                     if (err) {
                       this.getUIContext().getPromptAction().showToast({
-                        message: `Steam 认证信息获取失败：${err}`
+                        message: `Steam 认证信息获取失败：${err.message}`
                       })
                       return
                     }
@@ -280,7 +280,7 @@ export struct SteamMFALogin {
                 this.loggingIn = false
                 if (err) {
                   this.getUIContext().getPromptAction().showToast({
-                    message: `Steam 认证信息获取失败：${err}`
+                    message: `Steam 认证信息获取失败：${err.message}`
                   })
                   return
                 }
@@ -339,7 +339,7 @@ export struct SteamLink {
                     return
                   }
                   this.getUIContext().getPromptAction().showToast({
-                    message: `添加 Authenticator 失败：${err}`
+                    message: `添加 Authenticator 失败：${err.message}`
                   })
                   return
                 }
@@ -428,7 +428,7 @@ export struct SteamConfirmLink {
                 this.linking = false
                 if (err) {
                   this.getUIContext().getPromptAction().showToast({
-                    message: `添加身份验证器失败：${err}`
+                    message: `添加身份验证器失败：${err.message}`
                   })
                   return
                 }
@@ -520,7 +520,7 @@ export struct SteamTransferAuthenticator {
               this.linking = false
               if (err) {
                 this.getUIContext().getPromptAction().showToast({
-                  message: `迁移身份验证器失败：${err}`
+                  message: `迁移身份验证器失败：${err.message}`
                 })
                 return
               }
@@ -577,7 +577,7 @@ export struct SteamConfirmTransferAuthenticator {
                 this.linking = false
                 if (err || !account!.success) {
                   this.getUIContext().getPromptAction().showToast({
-                    message: `迁移身份验证器失败：${err}`
+                    message: `迁移身份验证器失败：${err?.message}`
                   })
                   return
                 }

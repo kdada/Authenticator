@@ -80,7 +80,7 @@ function buildSteamInput(params: PromptParams<SteamParams>) {
         })
       }.width("50%")
       .justifyContent(FlexAlign.SpaceEvenly)
-    }.backgroundColor($r("app.color.2fa_dialog_background"))
+    }.backgroundColor($r("app.color.mfa_dialog_background"))
     .padding(10)
     .border({ radius: 5 })
   }
@@ -151,7 +151,7 @@ export struct Detail {
           (err) => {
             if (err) {
               this.getUIContext().getPromptAction().showToast({
-                message: `Steam 登录失败：${err}`
+                message: `Steam 登录失败：${err.message}`
               })
               return
             }
