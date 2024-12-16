@@ -201,6 +201,13 @@ struct Index {
         .margin(10)
         .backgroundColor($r("app.color.vendor_background_color"))
         .borderRadius(20)
+    } else if (issuer.toLowerCase() == "epic games") {
+      Image($rawfile("Epic Games.png"))
+        .width(40)
+        .padding(5)
+        .margin(10)
+        .backgroundColor($r("app.color.vendor_background_color"))
+        .borderRadius(20)
     } else {
       SymbolGlyph($r("sys.symbol.person"))
         .fontSize(30)

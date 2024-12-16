@@ -5,26 +5,26 @@
         "name": "default",
         "type": "HarmonyOS",
         "material": {
-          "certpath": "C:/Users/Kira/.ohos/release/AuthenticatorRelease.cer",
-          "storePassword": "0000001B0E95BCA0451AEDF8DF29160B0781565ED8F4BCD190380D80DDC55B50CFBC2BB7B7D050302E9AA5",
-          "keyAlias": "AuthenticatorRelease",
-          "keyPassword": "0000001B157F6069C0E772EB60FD14DE266A6887CE9A1264E838A4DB1B1AF71E10C53A7784F6BCB2061581",
-          "profile": "C:/Users/Kira/.ohos/release/AuthenticatorRelease.p7b",
+          "certpath": "C:/Users/Kira/.ohos/config/default_Authenticator_4bF5s5qeQZg8KAnmWWkbeIaW_mdOKLdknNy0ne4DSyc=.cer",
+          "storePassword": "0000001BB2586246833172A34905F1C15C6D08BE9EAE65678144AC218C0A7E441BF9B934710EEB3B0A9A82",
+          "keyAlias": "debugKey",
+          "keyPassword": "0000001B04F4256C81233BEC48813665072F24A90BF8AA94208FE85CA394EAA09F1A8DAF937E33380E2CE0",
+          "profile": "C:/Users/Kira/.ohos/config/default_Authenticator_4bF5s5qeQZg8KAnmWWkbeIaW_mdOKLdknNy0ne4DSyc=.p7b",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "C:/Users/Kira/.ohos/release/AuthenticatorRelease.p12"
+          "storeFile": "C:/Users/Kira/.ohos/config/default_Authenticator_4bF5s5qeQZg8KAnmWWkbeIaW_mdOKLdknNy0ne4DSyc=.p12"
         }
       },
       {
-        "name": "dev",
+        "name": "release",
         "type": "HarmonyOS",
         "material": {
-          "certpath": "C:\\Users\\Kira\\.ohos\\config\\dev_Authenticator_4bF5s5qeQZg8KAnmWWkbeIaW_mdOKLdknNy0ne4DSyc=.cer",
-          "storePassword": "0000001ADFC3F0928C474684F34B0EBEF4DA1E9FE56A5A6F65E14AE4F2D93D855ECE2A40E31CB8955A65",
-          "keyAlias": "debugKey",
-          "keyPassword": "0000001A5C3FD293C53DD1E719E60D112C9D1AA368E5EA1F682A8FB8CBD0E358EFF7F87A778C00BCEB4F",
-          "profile": "C:\\Users\\Kira\\.ohos\\config\\dev_Authenticator_4bF5s5qeQZg8KAnmWWkbeIaW_mdOKLdknNy0ne4DSyc=.p7b",
+          "storePassword": "0000001BFB4C84F0113215716D8B3B80B8BE3825AEC12A54275C24983D53C1B5CBF32809B3F442A8C932D2",
+          "certpath": "C:\\Users\\Kira\\.ohos\\release\\Authenticator.cer",
+          "keyAlias": "Authenticator",
+          "keyPassword": "0000001B2E732C13D6EEDEBCC9E0FFBBAFBEBDB6CD4BF2C84969680A2BA1BB71B3DDB0508B5E9D6A9275E0",
+          "profile": "C:\\Users\\Kira\\.ohos\\release\\AuthenticatorRelease.p7b",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "C:\\Users\\Kira\\.ohos\\config\\dev_Authenticator_4bF5s5qeQZg8KAnmWWkbeIaW_mdOKLdknNy0ne4DSyc=.p12"
+          "storeFile": "C:\\Users\\Kira\\.ohos\\release\\Authenticator.p12"
         }
       }
     ],
@@ -42,8 +42,8 @@
         }
       },
       {
-        "name": "dev",
-        "signingConfig": "dev",
+        "name": "release",
+        "signingConfig": "release",
         "compatibleSdkVersion": "5.0.0(12)",
         "runtimeOS": "HarmonyOS",
         "buildOption": {
@@ -75,9 +75,9 @@
           ]
         },
         {
-          "name": "dev",
+          "name": "release",
           "applyToProducts": [
-            "dev"
+            "release"
           ]
         }
       ]
