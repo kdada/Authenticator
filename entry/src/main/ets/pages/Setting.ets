@@ -1,12 +1,14 @@
 import { bundleManager, common, ConfigurationConstant } from "@kit.AbilityKit";
 import { picker, fileIo as fs } from "@kit.CoreFileKit";
 import { AuthDataStore } from "./Base";
+import { ShowPrivacyView } from "./PrivacyView";
 
 @Component
 export struct Setting {
   @StorageLink("enableAutoDarkMode") enableAutoDarkMode: boolean = true
   @StorageLink("enableSafeMode") enableSafeMode: boolean = false
   @StorageLink("hideToken") hideToken: boolean = false
+  @StorageLink("privacyState") privacyState: string = "Unknown"
   @Consume("authDataStore") authDataStore: AuthDataStore
   private appInfo?: bundleManager.BundleInfo = undefined
 
@@ -79,6 +81,32 @@ export struct Setting {
 
           Row() {
             Text("启用后，在 App 首页的令牌将显示为星号，点击星号显示令牌。\n详情页不受此设置影响，直接显示令牌。")
+              .padding({ left: 30, right: 20 })
+              .fontSize(12)
+          }
+          .width("100%")
+
+          Row() {
+            Text("隐私政策")
+              .width("75%")
+              .fontWeight(FontWeight.Bold)
+              .textAlign(TextAlign.Start)
+            Text(this.privacyState == "Agreed" ? "已同意" : "未同意")
+              .width("15%")
+              .fontWeight(FontWeight.Bold)
+              .onClick(() => {
+                ShowPrivacyView(this.getUIContext(), (state: string) => {
+                  this.privacyState = state
+                })
+              })
+
+          }
+          .height(40)
+          .alignItems(VerticalAlign.Center)
+
+          Row() {
+            Text("无论是否同意隐私政策，均可使用所有功能。点击选项右侧的【" + (this.privacyState == "Agreed" ? "已同意" :
+              "未同意") + "】，可再次查看隐私政策内容。")
               .padding({ left: 30, right: 20 })
               .fontSize(12)
           }

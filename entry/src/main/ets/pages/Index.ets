@@ -6,7 +6,7 @@ import { cryptoFramework } from '@kit.CryptoArchitectureKit';
 import { Setting } from './Setting';
 import { userAuth } from '@kit.UserAuthenticationKit';
 import { Detail } from './Detail';
-import { AuthData, AuthDataStore, SteamAccountData } from './Base';
+import { AuthData, AuthDataStore, PromptParams, SteamAccountData } from './Base';
 import { SteamConfirmationList } from './SteamConfirmationList';
 import { SteamConfirmationDetail } from './SteamConfirmationDetail';
 import { Confirmation } from './Steam';
@@ -20,6 +20,7 @@ import {
   SteamMFALogin,
   SteamTransferAuthenticator
 } from "./AddSteam";
+import { ShowPrivacyView } from "./PrivacyView";
 
 @Entry
 @Component
@@ -34,6 +35,7 @@ struct Index {
   @Provide("safe") safe: boolean = false;
   @StorageProp("enableSafeMode") enableSafeMode: boolean = false
   @StorageProp("hideToken") hideToken: boolean = false
+  @StorageLink("privacyState") privacyState: string = "Unknown"
   private timer?: number;
 
   aboutToAppear(): void {
@@ -43,6 +45,13 @@ struct Index {
       this.progress = systemDateTime.getTime(false) / 1000 % 30
       this.authDataStore.refreshAllPassword()
     }, 1000)
+
+    if (this.privacyState == "Unknown") {
+      ShowPrivacyView(this.getUIContext(), (state: string) => {
+        this.privacyState = state
+      })
+    }
+
   }
 
   aboutToDisappear(): void {
@@ -194,7 +203,7 @@ struct Index {
         .margin(10)
         .backgroundColor($r("app.color.vendor_background_color"))
         .borderRadius(20)
-    } else if (issuer.toLowerCase() == "nintendo") {
+    } else if (issuer.toLowerCase() == "nintendo" || issuer.toLowerCase() == "nintendo account") {
       Image($rawfile("Nintendo.png"))
         .width(40)
         .padding(5)
@@ -203,6 +212,41 @@ struct Index {
         .borderRadius(20)
     } else if (issuer.toLowerCase() == "epic games") {
       Image($rawfile("Epic Games.png"))
+        .width(40)
+        .padding(5)
+        .margin(10)
+        .backgroundColor($r("app.color.vendor_background_color"))
+        .borderRadius(20)
+    } else if (issuer.toLowerCase() == "cloudflare") {
+      Image($rawfile("Cloudflare.png"))
+        .width(40)
+        .padding(5)
+        .margin(10)
+        .backgroundColor($r("app.color.vendor_background_color"))
+        .borderRadius(20)
+    } else if (issuer.toLowerCase() == "twitter") {
+      Image($rawfile("Twitter.png"))
+        .width(40)
+        .padding(5)
+        .margin(10)
+        .backgroundColor($r("app.color.vendor_background_color"))
+        .borderRadius(20)
+    } else if (issuer.toLowerCase() == "nvidia") {
+      Image($rawfile("Nvidia.png"))
+        .width(40)
+        .padding(5)
+        .margin(10)
+        .backgroundColor($r("app.color.vendor_background_color"))
+        .borderRadius(20)
+    } else if (issuer.toLowerCase() == "ubisoft" || issuer.toLowerCase() == "uplay") {
+      Image($rawfile("Ubisoft.png"))
+        .width(40)
+        .padding(5)
+        .margin(10)
+        .backgroundColor($r("app.color.vendor_background_color"))
+        .borderRadius(20)
+    } else if (issuer.toLowerCase() == "jetbrains") {
+      Image($rawfile("Jetbrains.png"))
         .width(40)
         .padding(5)
         .margin(10)

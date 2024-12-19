@@ -269,6 +269,7 @@ export class PromptParams<T> {
   private ctx?: UIContext
   private content?: ComponentContent<PromptParams<T>>
   public data: T
+  public autoCancel: boolean = true
 
   constructor(ctx: UIContext, builder: WrappedBuilder<[PromptParams<T>]>, data: T) {
     this.ctx = ctx
