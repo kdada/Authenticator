@@ -48,7 +48,7 @@ function buildSteamInput(params: PromptParams<SteamParams>) {
             data.steamID = authdata["steam_id"] as string
             data.serialNumber = authdata["serial_number"] as string
             data.revocationCode = authdata["revocation_code"] as string
-            data.shardSecret = authdata["shared_secret"] as string
+            data.sharedSecret = authdata["shared_secret"] as string
             data.tokenGID = authdata["token_gid"] as string
             data.identitySecret = authdata["identity_secret"] as string
             data.uri = authdata["uri"] as string
@@ -147,7 +147,7 @@ export struct Detail {
     try {
       scanBarcode.startScanForResult(getContext(this), options).then((result: scanBarcode.ScanResult) => {
         this.steamClient.approveQRLogin(this.steamAuthData.steamID, this.steamAuthData.refreshToken,
-          this.steamAuthData.shardSecret, false, result.originalValue,
+          this.steamAuthData.sharedSecret, false, result.originalValue,
           (err) => {
             if (err) {
               this.getUIContext().getPromptAction().showToast({

@@ -23,7 +23,7 @@ export class SteamAuthData {
   public steamID: string = ""
   public serialNumber: string = ""
   public revocationCode: string = ""
-  public shardSecret: string = ""
+  public sharedSecret: string = ""
   public tokenGID: string = ""
   public identitySecret: string = ""
   public uri: string = ""
@@ -241,6 +241,33 @@ export class AuthDataStore {
     }
     for (let index = 0; index < result.length; index++) {
       const element = result[index];
+      if(element.issuer.toLowerCase()=='steam'){
+        let authdata = JSON.parse(element.external) as Record<string, Object>
+        // 兼容前面版本导出的备份文件
+        if (authdata["sharedSecret"] == undefined){
+          let data = new SteamAuthData()
+          data.sharedSecret = authdata["shardSecret"] as string
+
+          data.accountName = authdata["accountName"] as string
+          data.steamID = authdata["steamID"] as string
+          data.serialNumber = authdata["serialNumber"] as string
+          data.revocationCode = authdata["revocationCode"] as string
+          data.tokenGID = authdata["tokenGID"] as string
+          data.identitySecret = authdata["identitySecret"] as string
+          data.uri = authdata["uri"] as string
+          data.deviceID = authdata["deviceID"] as string
+          data.secret1 = authdata["secret1"] as string
+          data.accessToken = authdata["accessToken"] as string
+          data.refreshToken = authdata["refreshToken"] as string
+
+          Object.entries(data).forEach((pair: [string, string]) => {
+            if (pair[1] == undefined) {
+              throw new Error(`缺少 ${pair[0]}`)
+            }
+          })
+          element.external = JSON.stringify(data)
+        }
+      }
       element.id = this.next++
       if (this.kvStore) {
         let authString = JSON.stringify(element)
