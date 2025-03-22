@@ -2,12 +2,14 @@ import { bundleManager, common, ConfigurationConstant } from "@kit.AbilityKit";
 import { picker, fileIo as fs } from "@kit.CoreFileKit";
 import { AuthDataStore } from "./Base";
 import { ShowPrivacyView } from "./PrivacyView";
+import { proxyServer } from "./proxy/Proxy"
 
 @Component
 export struct Setting {
   @StorageLink("enableAutoDarkMode") enableAutoDarkMode: boolean = true
   @StorageLink("enableSafeMode") enableSafeMode: boolean = false
   @StorageLink("hideToken") hideToken: boolean = false
+  @StorageLink("enhanceNetwork") enhanceNetwork: boolean = false
   @StorageLink("privacyState") privacyState: string = "Unknown"
   @Consume("authDataStore") authDataStore: AuthDataStore
   private appInfo?: bundleManager.BundleInfo = undefined
@@ -85,6 +87,28 @@ export struct Setting {
               .fontSize(12)
           }
           .width("100%")
+
+          if (proxyServer != "") {
+            Row() {
+              Text("增强访问")
+                .width("80%")
+                .fontWeight(FontWeight.Bold)
+                .textAlign(TextAlign.Start)
+              Toggle({ type: ToggleType.Switch, isOn: this.enhanceNetwork })
+                .onChange((isOn) => {
+                  this.enhanceNetwork = isOn
+                })
+            }
+            .height(40)
+            .alignItems(VerticalAlign.Center)
+
+            Row() {
+              Text("启用后，增强通过令牌访问特定服务的稳定性。")
+                .padding({ left: 30, right: 20 })
+                .fontSize(12)
+            }
+            .width("100%")
+          }
 
           Row() {
             Text("隐私政策")

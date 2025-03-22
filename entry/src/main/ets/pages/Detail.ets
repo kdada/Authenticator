@@ -94,7 +94,8 @@ export struct Detail {
   @State progress: number = 0;
   @State steamAuthData: SteamAuthData = new SteamAuthData()
   @State steamExpirationTime: Date = new Date()
-  private steamClient = new SteamClient()
+  @StorageProp("enhanceNetwork") enhanceNetwork: boolean = false
+  private steamClient = new SteamClient(this.enhanceNetwork)
   @Consume("authDataStore") authDataStore: AuthDataStore
   @Consume("safe") safe: boolean;
   @Consume("pageStack") pageStack: NavPathStack;

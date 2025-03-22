@@ -1,11 +1,12 @@
 import { http } from '@kit.NetworkKit'
 import { cryptoFramework } from '@kit.CryptoArchitectureKit'
 import { url, util } from '@kit.ArkTS'
-import { systemDateTime } from '@kit.BasicServicesKit'
+import { AsyncCallback, systemDateTime } from '@kit.BasicServicesKit'
 import * as steamapi from './steamapi/custom'
 import * as steam2faapi from './steamapi/service_twofactor'
 import { EAuthSessionGuardType } from './steamapi/custom'
 import Long from 'long'
+import { proxyServer, proxyAuthToken } from './proxy/Proxy'
 
 export class Confirmation {
   // Test = 1
@@ -192,6 +193,26 @@ function getEResultCode(eResult: string): string {
 export class SteamClient {
   private accessToken: string = ""
   private accessTokenUnixTimestamp: number = 0
+  private enhanceNetwork: boolean = false
+
+  constructor(enhanceNetwork: boolean) {
+    this.enhanceNetwork = enhanceNetwork
+  }
+
+  request(urlPath: string, options: http.HttpRequestOptions, callback: AsyncCallback<http.HttpResponse, void>) {
+    if (this.enhanceNetwork && proxyServer != "" && proxyAuthToken != "") {
+      let u = url.URL.parseURL(urlPath)
+      u.host = proxyServer
+      urlPath = u.toString()
+
+      if (!options.header) {
+        options.header = {}
+      }
+      options.header["Proxy-Auth-Token"] = proxyAuthToken
+    }
+    let req = http.createHttp()
+    req.request(urlPath, options, callback)
+  }
 
   generateAccessToken(steamID: string, refreshToken: string,
     callback: (err: Error | null, token: string) => void) {
@@ -203,8 +224,7 @@ export class SteamClient {
     let contentType = "application/x-www-form-urlencoded"
     let data = `refresh_token=${refreshToken}&steamid=${steamID}&renewal_type=0`
 
-    let req = http.createHttp()
-    req.request(url, {
+    this.request(url, {
       method: http.RequestMethod.POST,
       header: {
         "Content-Type": contentType,
@@ -273,8 +293,7 @@ export class SteamClient {
         callback(err)
         return
       }
-      let req = http.createHttp()
-      req.request(url + `?access_token=${token}`, {
+      this.request(url + `?access_token=${token}`, {
         method: http.RequestMethod.POST,
         header: {
           "Content-Type": contentType
@@ -332,8 +351,7 @@ export class SteamClient {
         return
       }
 
-      let req = http.createHttp()
-      req.request(url + `?${data}`, {
+      this.request(url + `?${data}`, {
         method: http.RequestMethod.GET,
         header: {
           "Cookie": `dob=;steamid=${steamID};steamLoginSecure=${steamID}||${token}`
@@ -384,8 +402,7 @@ export class SteamClient {
         return
       }
 
-      let req = http.createHttp()
-      req.request(url + `?${data}`, {
+      this.request(url + `?${data}`, {
         method: http.RequestMethod.POST,
         header: {
           "Content-Type": contentType,
@@ -402,8 +419,7 @@ export class SteamClient {
   getAccountPublicKey(steamAccount: string, callback: (err?: Error, publicKey?: AccountPublickKey) => void) {
     let url =
       `https://api.steampowered.com/IAuthenticationService/GetPasswordRSAPublicKey/v1/?account_name=${steamAccount}`
-    let req = http.createHttp()
-    req.request(url, {
+    this.request(url, {
       method: http.RequestMethod.GET,
       expectDataType: http.HttpDataType.OBJECT,
     }, (err, resp) => {
@@ -464,8 +480,7 @@ export class SteamClient {
       let params = new url.URLParams()
       params.append("input_protobuf_encoded", pbData)
 
-      let req = http.createHttp()
-      req.request(apiUrl, {
+      this.request(apiUrl, {
         method: http.RequestMethod.POST,
         header: {
           "Content-Type": contentType,
@@ -510,8 +525,7 @@ export class SteamClient {
     let params = new url.URLParams()
     params.append("input_protobuf_encoded", pbData)
 
-    let req = http.createHttp()
-    req.request(apiUrl, {
+    this.request(apiUrl, {
       method: http.RequestMethod.POST,
       header: {
         "Content-Type": contentType,
@@ -550,8 +564,7 @@ export class SteamClient {
     let params = new url.URLParams()
     params.append("input_protobuf_encoded", pbData)
 
-    let req = http.createHttp()
-    req.request(apiUrl, {
+    this.request(apiUrl, {
       method: http.RequestMethod.POST,
       header: {
         "Content-Type": contentType,
@@ -597,8 +610,7 @@ export class SteamClient {
         callback(err)
         return
       }
-      let req = http.createHttp()
-      req.request(apiUrl + `?access_token=${token}`, {
+      this.request(apiUrl + `?access_token=${token}`, {
         method: http.RequestMethod.POST,
         header: {
           "Content-Type": contentType,
@@ -646,8 +658,7 @@ export class SteamClient {
         callback(err)
         return
       }
-      let req = http.createHttp()
-      req.request(apiUrl + `?access_token=${token}`, {
+      this.request(apiUrl + `?access_token=${token}`, {
         method: http.RequestMethod.POST,
         header: {
           "Content-Type": contentType,
@@ -692,8 +703,7 @@ export class SteamClient {
         callback(err)
         return
       }
-      let req = http.createHttp()
-      req.request(apiUrl + `?access_token=${token}`, {
+      this.request(apiUrl + `?access_token=${token}`, {
         method: http.RequestMethod.POST,
         header: {
           "Content-Type": contentType,
@@ -729,8 +739,7 @@ export class SteamClient {
         callback(err)
         return
       }
-      let req = http.createHttp()
-      req.request(apiUrl + `?access_token=${token}`, {
+      this.request(apiUrl + `?access_token=${token}`, {
         method: http.RequestMethod.POST,
         header: {
           "Content-Type": contentType,
@@ -774,8 +783,7 @@ export class SteamClient {
         callback(err)
         return
       }
-      let req = http.createHttp()
-      req.request(apiUrl + `?access_token=${token}`, {
+      this.request(apiUrl + `?access_token=${token}`, {
         method: http.RequestMethod.POST,
         header: {
           "Content-Type": contentType,
@@ -819,8 +827,7 @@ export class SteamClient {
         callback(err)
         return
       }
-      let req = http.createHttp()
-      req.request(apiUrl + `?access_token=${token}`, {
+      this.request(apiUrl + `?access_token=${token}`, {
         method: http.RequestMethod.POST,
         header: {
           "Content-Type": contentType,

@@ -51,7 +51,8 @@ export struct SteamLogin {
   @State steamAccount: string = "";
   @State steamPassword: string = "";
   @State loggingIn: boolean = false;
-  private steamClient: SteamClient = new SteamClient();
+  @StorageProp("enhanceNetwork") enhanceNetwork: boolean = false
+  private steamClient: SteamClient = new SteamClient(this.enhanceNetwork);
   private accountData: SteamAccountData = new SteamAccountData();
 
   build() {
@@ -162,7 +163,8 @@ export struct SteamLogin {
 export struct SteamMFALogin {
   @Consume("pageStack") pageStack: NavPathStack;
   @State loggingIn: boolean = false;
-  private steamClient: SteamClient = new SteamClient();
+  @StorageProp("enhanceNetwork") enhanceNetwork: boolean = false
+  private steamClient: SteamClient = new SteamClient(this.enhanceNetwork);
   public accountData: SteamAccountData = new SteamAccountData();
   private steamToken: string = "";
 
@@ -299,7 +301,8 @@ export struct SteamMFALogin {
 export struct SteamLink {
   @Consume("pageStack") pageStack: NavPathStack;
   @State linking: boolean = false;
-  private steamClient: SteamClient = new SteamClient();
+  @StorageProp("enhanceNetwork") enhanceNetwork: boolean = false
+  private steamClient: SteamClient = new SteamClient(this.enhanceNetwork);
   public accountData: SteamAccountData = new SteamAccountData();
 
   build() {
@@ -359,7 +362,8 @@ export struct SteamConfirmLink {
   @Consume("pageStack") pageStack: NavPathStack;
   @Consume("authDataStore") authDataStore: AuthDataStore;
   @State linking: boolean = false;
-  private steamClient: SteamClient = new SteamClient();
+  @StorageProp("enhanceNetwork") enhanceNetwork: boolean = false
+  private steamClient: SteamClient = new SteamClient(this.enhanceNetwork);
   private steamToken: string = "";
   public accountData: SteamAccountData = new SteamAccountData();
 
@@ -484,7 +488,8 @@ export struct SteamConfirmLink {
 export struct SteamTransferAuthenticator {
   @Consume("pageStack") pageStack: NavPathStack;
   @State linking: boolean = false;
-  private steamClient: SteamClient = new SteamClient();
+  @StorageProp("enhanceNetwork") enhanceNetwork: boolean = false
+  private steamClient: SteamClient = new SteamClient(this.enhanceNetwork);
   public accountData: SteamAccountData = new SteamAccountData();
 
   build() {
@@ -539,7 +544,8 @@ export struct SteamConfirmTransferAuthenticator {
   @Consume("authDataStore") authDataStore: AuthDataStore;
   @State steamToken: string = "";
   @State linking: boolean = false;
-  private steamClient: SteamClient = new SteamClient();
+  @StorageProp("enhanceNetwork") enhanceNetwork: boolean = false
+  private steamClient: SteamClient = new SteamClient(this.enhanceNetwork);
   public accountData: SteamAccountData = new SteamAccountData();
 
   build() {
