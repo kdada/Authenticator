@@ -5,13 +5,13 @@
         "name": "default",
         "type": "HarmonyOS",
         "material": {
-          "certpath": "C:/Users/Kira/.ohos/config/default_Authenticator_4bF5s5qeQZg8KAnmWWkbeIaW_mdOKLdknNy0ne4DSyc=.cer",
-          "storePassword": "0000001BB2586246833172A34905F1C15C6D08BE9EAE65678144AC218C0A7E441BF9B934710EEB3B0A9A82",
+          "certpath": "C:\\Users\\Kira\\.ohos\\config\\default_Authenticator_4bF5s5qeQZg8KAnmWWkbeIaW_mdOKLdknNy0ne4DSyc=.cer",
+          "storePassword": "0000001BA25BA0F6A46C30C247C50C050A45CCA73EDBCA16121BD2120AD062C8F60AA315777D06FF37A464",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001B04F4256C81233BEC48813665072F24A90BF8AA94208FE85CA394EAA09F1A8DAF937E33380E2CE0",
-          "profile": "C:/Users/Kira/.ohos/config/default_Authenticator_4bF5s5qeQZg8KAnmWWkbeIaW_mdOKLdknNy0ne4DSyc=.p7b",
+          "keyPassword": "0000001B446868BC0943AE8F17AE2BB1CBCC7424EBB5F841D6AEC3B2EF1B256D3C43077D20BE2841040459",
+          "profile": "C:\\Users\\Kira\\.ohos\\config\\default_Authenticator_4bF5s5qeQZg8KAnmWWkbeIaW_mdOKLdknNy0ne4DSyc=.p7b",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "C:/Users/Kira/.ohos/config/default_Authenticator_4bF5s5qeQZg8KAnmWWkbeIaW_mdOKLdknNy0ne4DSyc=.p12"
+          "storeFile": "C:\\Users\\Kira\\.ohos\\config\\default_Authenticator_4bF5s5qeQZg8KAnmWWkbeIaW_mdOKLdknNy0ne4DSyc=.p12"
         }
       },
       {
@@ -44,7 +44,7 @@
       {
         "name": "release",
         "signingConfig": "release",
-        "compatibleSdkVersion": "5.0.0(12)",
+        "compatibleSdkVersion": "5.0.2(14)",
         "runtimeOS": "HarmonyOS",
         "buildOption": {
           "strictMode": {

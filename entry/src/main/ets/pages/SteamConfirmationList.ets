@@ -6,7 +6,8 @@ import { intl } from "@kit.LocalizationKit";
 @Component
 export struct SteamConfirmationList {
   public steamAuthData: SteamAuthData = new SteamAuthData()
-  public steamClient: SteamClient = new SteamClient()
+  @StorageProp("enhanceNetwork") enhanceNetwork: boolean = false
+  public steamClient: SteamClient = new SteamClient(this.enhanceNetwork)
   @State steamConfirmations: Confirmation[] = []
   @State loading: boolean = false
   @Consume("pageStack") pageStack: NavPathStack;
