@@ -18,7 +18,8 @@ import {
   SteamLink,
   SteamLogin,
   SteamMFALogin,
-  SteamTransferAuthenticator
+  SteamTransferAuthenticator,
+  SteamRefreshToken
 } from "./AddSteam";
 import { ShowPrivacyView } from "./PrivacyView";
 
@@ -135,6 +136,8 @@ struct Index {
       SteamConfirmationList({ steamAuthData: param["authData"], steamClient: param["client"] })
     } else if (name == "SteamConfirmationDetail") {
       SteamConfirmationDetail({ confirmation: param as Confirmation })
+    } else if (name == "SteamRefreshToken") {
+      SteamRefreshToken({ authData: param["baseAuthData"], steamAuthData: param["authData"] })
     }
   }
 
@@ -418,10 +421,16 @@ struct Index {
       { scanTypes: [scanCore.ScanType.ALL], enableMultiMode: true, enableAlbum: true };
     try {
       scanBarcode.startScanForResult(getContext(this), options).then((result: scanBarcode.ScanResult) => {
+        try {
         this.authDataStore.addAuthItem(result.originalValue)
         this.getUIContext().getPromptAction().showToast({
           message: "成功添加令牌"
         })
+        } catch (error) {
+          this.getUIContext().getPromptAction().showToast({
+            message: `扫码失败：${error}`
+          })
+        }
       })
     } catch (error) {
       this.getUIContext().getPromptAction().showToast({
