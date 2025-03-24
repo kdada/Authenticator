@@ -649,14 +649,7 @@ export struct SteamRefreshToken {
       RelativeContainer() {
         Column() {
           Row() {
-            Text("更新 Steam 认证信息过期时间需要重新登陆")
-              .copyOption(CopyOptions.LocalDevice)
-              .fontSize(14)
-          }
-          .margin({ bottom: 10 })
-
-          Row() {
-            Text("请输入 Steam 账户名称和密码")
+            Text("更新需要重新登录 Steam，请输入密码")
               .fontWeight(FontWeight.Bold)
           }
           .margin({ bottom: 10 })
