@@ -627,3 +627,147 @@ export struct SteamConfirmTransferAuthenticator {
     .title("添加 Steam 令牌")
   }
 }
+
+@Component
+export struct SteamRefreshToken {
+  public authData: AuthData = new AuthData()
+  public steamAuthData: SteamAuthData = new SteamAuthData()
+  @Consume("pageStack") pageStack: NavPathStack;
+  @Consume("authDataStore") authDataStore: AuthDataStore;
+  @State steamAccount: string = "";
+  @State steamPassword: string = "";
+  @State loggingIn: boolean = false;
+  @StorageProp("enhanceNetwork") enhanceNetwork: boolean = false
+  private steamClient: SteamClient = new SteamClient(this.enhanceNetwork);
+
+  aboutToAppear(): void {
+    this.steamAccount = this.steamAuthData.accountName
+  }
+
+  build() {
+    NavDestination() {
+      RelativeContainer() {
+        Column() {
+          Row() {
+            Text("更新 Steam 认证信息过期时间需要重新登陆")
+              .copyOption(CopyOptions.LocalDevice)
+              .fontSize(14)
+          }
+          .margin({ bottom: 10 })
+
+          Row() {
+            Text("请输入 Steam 账户名称和密码")
+              .fontWeight(FontWeight.Bold)
+          }
+          .margin({ bottom: 10 })
+
+          Row() {
+            Text("账户名称")
+              .width("30%")
+              .fontWeight(FontWeight.Bold)
+              .textAlign(TextAlign.Start)
+            Text(this.steamAccount)
+              .width("60%")
+              .fontWeight(FontWeight.Bold)
+              .textAlign(TextAlign.End)
+          }
+          .margin({ bottom: 10 })
+
+          Row() {
+            Text("密码")
+              .width("30%")
+              .fontWeight(FontWeight.Bold)
+              .textAlign(TextAlign.Start)
+            TextInput({ text: this.steamPassword })
+              .type(InputType.Password)
+              .width("60%")
+              .fontWeight(FontWeight.Bold)
+              .textAlign(TextAlign.End)
+              .maxLength(50)
+              .onChange((v) => this.steamPassword = v.trim())
+          }
+        }
+        .alignRules({
+          middle: { anchor: "__container__", align: HorizontalAlign.Center },
+          center: { anchor: "__container__", align: VerticalAlign.Center }
+        })
+
+        Button("登录")
+          .enabled((!this.loggingIn) && (this.steamAccount != "") && (this.steamPassword != ""))
+          .width(150)
+          .margin({ bottom: 20 })
+          .alignRules({
+            middle: { anchor: "__container__", align: HorizontalAlign.Center },
+            bottom: { anchor: "__container__", align: VerticalAlign.Bottom }
+          })
+          .onClick(() => {
+            this.getUIContext().getPromptAction().showToast({
+              message: `开始登录 Steam...`
+            })
+            this.loggingIn = true
+            this.steamClient.login(this.steamAccount, this.steamPassword, (err, auth) => {
+              this.loggingIn = false
+              if (err) {
+                this.getUIContext().getPromptAction().showToast({
+                  message: `Steam 登录失败：${err.message}`
+                })
+                return
+              }
+              let confirmation = steamapi.EAuthSessionGuardType.k_EAuthSessionGuardType_Unknown
+              for (let index = 0; index < auth!.allowedConfirmations.length; index++) {
+                const element = auth!.allowedConfirmations[index]
+                if (element.confirmationType == steamapi.EAuthSessionGuardType.k_EAuthSessionGuardType_DeviceCode) {
+                  confirmation = element.confirmationType
+                  break
+                }
+              }
+              if (confirmation != steamapi.EAuthSessionGuardType.k_EAuthSessionGuardType_DeviceCode) {
+                this.getUIContext().getPromptAction().showToast({
+                  message: `Steam 登录成功，但确认类型错误：${confirmation}`
+                })
+                return
+              }
+
+              this.getUIContext().getPromptAction().showToast({
+                message: `Steam 登录成功，正在提交令牌...`
+              })
+
+              this.loggingIn = true
+              this.steamClient.submitLoginCode(auth!.steamid, auth!.clientId,
+                confirmation, this.authData.password, (err) => {
+                  this.loggingIn = false
+                  if (err) {
+                    this.getUIContext().getPromptAction().showToast({
+                      message: `Steam 令牌提交失败：${err.message}`
+                    })
+                    return
+                  }
+                  this.getUIContext().getPromptAction().showToast({
+                    message: `Steam 令牌提交成功，正在获取认证信息...`
+                  })
+                  this.loggingIn = true
+                  this.steamClient.pollTokens(auth!.clientId, auth!.requestId, (err, tokens) => {
+                    this.loggingIn = false
+                    if (err) {
+                      this.getUIContext().getPromptAction().showToast({
+                        message: `Steam 认证信息获取失败：${err.message}`
+                      })
+                      return
+                    }
+                    this.steamAuthData.refreshToken = tokens!.refreshToken
+                    this.steamAuthData.accessToken = tokens!.accessToken
+                    this.authData.external = JSON.stringify(this.steamAuthData)
+                    this.authDataStore.saveAuthItem(this.authData.id)
+                    this.getUIContext().getPromptAction().showToast({
+                      message: `更新 Steam 认证信息成功`
+                    })
+                    this.pageStack.clear()
+                  })
+                })
+            })
+          })
+      }
+    }
+    .title("更新 Steam 认证信息过期时间")
+  }
+}

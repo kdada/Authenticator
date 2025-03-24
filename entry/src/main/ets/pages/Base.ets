@@ -189,7 +189,7 @@ export class AuthDataStore {
   addAuthItem(data: string) {
     let authURI = new uri.URI(data.trim())
     if (authURI.scheme != "otpauth" || authURI.host != "totp") {
-      throw new Error("无效的协议");
+      throw new Error(`无效的协议：${authURI.scheme}://${authURI.host}`);
     }
     let secret = authURI.getQueryValue("secret")
     let issuer = authURI.getQueryValue("issuer")

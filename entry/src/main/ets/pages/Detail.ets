@@ -100,6 +100,7 @@ export struct Detail {
   @Consume("safe") safe: boolean;
   @Consume("pageStack") pageStack: NavPathStack;
   private timer?: number;
+  private lastExternalInfo: string = "";
 
   aboutToAppear(): void {
     this.loadSteamAuthData()
@@ -120,6 +121,9 @@ export struct Detail {
     if (this.item.issuer != "Steam" || this.item.external == "") {
       return
     }
+    if (this.item.external == this.lastExternalInfo) {
+      return
+    }
     try {
       this.steamAuthData = JSON.parse(this.item.external) as SteamAuthData
       let parts = this.steamAuthData.refreshToken.split(".")
@@ -130,6 +134,7 @@ export struct Detail {
       let obj = JSON.parse(jwt) as Record<string, Object>
       let unixTimestamp = obj["exp"] as number
       this.steamExpirationTime = new Date(unixTimestamp * 1000)
+      this.lastExternalInfo = this.item.external
     } catch (e) {
       this.getUIContext().getPromptAction().showToast({
         message: `认证信息格式错误，${e.toString()}, 内容：${this.item.external}`
@@ -140,6 +145,12 @@ export struct Detail {
   onSteamButtonPressed() {
     let params = new PromptParams(this.getUIContext(), wrapBuilder(buildSteamInput), new SteamParams(this))
     params.open()
+  }
+
+  onSteamRefreshButtonPressed() {
+    let params: Record<string, Object> =
+      { "baseAuthData": this.item, "authData": this.steamAuthData, "client": this.steamClient }
+    this.pageStack.pushPathByName("SteamRefreshToken", params)
   }
 
   onSteamScanButtonPressed() {
@@ -225,6 +236,9 @@ export struct Detail {
         }
         .height(40)
         .alignItems(VerticalAlign.Center)
+
+        Button("更新 Steam 认证信息过期时间")
+          .onClick(() => this.onSteamRefreshButtonPressed())
       }
     }
   }
