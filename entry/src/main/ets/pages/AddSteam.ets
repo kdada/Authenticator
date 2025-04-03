@@ -19,7 +19,7 @@ export struct AddSteamToken {
           Text("1. 登录 Steam\n2. 向 Steam 中添加身份验证器")
             .copyOption(CopyOptions.LocalDevice)
             .fontSize(14)
-          Text("注：期间需要输入 Steam 密码和验证码\n如遇问题请加 QQ 群咨询：931132608")
+          Text("注：期间需要输入 Steam 密码和验证码。\n如遇请求超时或请求失败等问题，请在设\n置中开启增强访问。")
             .copyOption(CopyOptions.LocalDevice)
             .fontSize(14)
             .margin(10)

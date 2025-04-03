@@ -190,13 +190,21 @@ export struct Detail {
   @Builder
   buildExternalView() {
     if (this.item.issuer == "Steam") {
-      Button("设置 Steam 认证信息")
-        .onClick(() => this.onSteamButtonPressed())
       if (this.item.external != undefined && this.item.external.length > 0) {
+        Row() {
+          Column() {
+            Text("----- Steam 认证信息 -----")
+            Text("如遇扫码登录和交易确认出现请求超时或请求失败等问题，请在设置中开启增强访问。")
+              .padding({ left: 30, right: 30 })
+              .fontSize(12)
+          }
+        }
+
         Row() {
           Text("Steam 账号")
             .width("30%")
             .textAlign(TextAlign.Start)
+            .margin(5)
           Text(this.steamAuthData.accountName)
             .width("60%")
             .textAlign(TextAlign.End)
@@ -237,8 +245,19 @@ export struct Detail {
         .height(40)
         .alignItems(VerticalAlign.Center)
 
-        Button("更新 Steam 认证信息过期时间")
-          .onClick(() => this.onSteamRefreshButtonPressed())
+        Row() {
+          Button("重新设置")
+            .onClick(() => this.onSteamButtonPressed())
+            .width("40%")
+            .margin(5)
+          Button("更新过期时间")
+            .onClick(() => this.onSteamRefreshButtonPressed())
+            .width("40%")
+            .margin(5)
+        }
+      } else {
+        Button("设置 Steam 认证信息")
+          .onClick(() => this.onSteamButtonPressed())
       }
     }
   }
