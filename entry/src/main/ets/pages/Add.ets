@@ -6,6 +6,7 @@ import { util } from "@kit.ArkTS";
 export struct Add {
   @Consume("pageStack") pageStack: NavPathStack;
   @Consume("authDataStore") authDataStore: AuthDataStore
+  @StorageLink("developmentMode") developmentMode: boolean = false
 
   build() {
     NavDestination() {
@@ -174,7 +175,11 @@ export struct Add {
             .height(40)
             .width("100%")
             .onClick(() => {
-              this.pageStack.pushPathByName("AddSteamToken", undefined)
+              if (this.developmentMode) {
+                this.pageStack.pushPathByName("AddSteamToken", undefined)
+              } else {
+                this.pageStack.pushPathByName("AddSteamSecret", undefined)
+              }
             })
 
             Row() {
@@ -416,5 +421,101 @@ export struct AddUri {
       .height("90%")
     }
     .title("通过 TOTP URI 添加")
+  }
+}
+
+@Component
+export struct AddSteamSecret {
+  @Consume("pageStack") pageStack: NavPathStack;
+  @Consume("authDataStore") authDataStore: AuthDataStore;
+  @State account: string = ""
+  @State secret: string = ""
+
+  build() {
+    NavDestination() {
+      Column() {
+        Row() {
+          Text("提供方")
+            .width("30%")
+            .fontWeight(FontWeight.Bold)
+            .textAlign(TextAlign.Start)
+          Text("Steam")
+            .width("60%")
+            .fontWeight(FontWeight.Bold)
+            .textAlign(TextAlign.End)
+        }
+        .height(40)
+        .alignItems(VerticalAlign.Center)
+        .margin({ bottom: 10 })
+
+        Row() {
+          Text("账号")
+            .width("30%")
+            .fontWeight(FontWeight.Bold)
+            .textAlign(TextAlign.Start)
+          TextInput({ text: this.account, placeholder: "用户名或邮箱" })
+            .width("60%")
+            .fontWeight(FontWeight.Bold)
+            .textAlign(TextAlign.End)
+            .maxLength(50)
+            .onChange((v) => this.account = v.trim())
+        }
+        .height(40)
+        .alignItems(VerticalAlign.Center)
+        .margin({ bottom: 10 })
+
+        Row() {
+          Text("密钥")
+            .width("30%")
+            .fontWeight(FontWeight.Bold)
+            .textAlign(TextAlign.Start)
+          TextInput({ text: this.secret, placeholder: "由 A-Z，2-7 组成的字符串" })
+            .width("60%")
+            .fontWeight(FontWeight.Bold)
+            .textAlign(TextAlign.End)
+            .maxLength(50)
+            .onChange((v) => this.secret = v.trim())
+        }
+        .margin({ bottom: 10 })
+
+        Row() {
+          Text("令牌位数")
+            .width("30%")
+            .fontWeight(FontWeight.Bold)
+            .textAlign(TextAlign.Start)
+          Text("5")
+            .width("60%")
+            .fontWeight(FontWeight.Bold)
+            .textAlign(TextAlign.End)
+        }
+        .height(40)
+        .alignItems(VerticalAlign.Center)
+        .margin({ bottom: 10 })
+
+        Row() {
+          Button('添加')
+            .onClick(() => {
+              try {
+                if (this.secret.length <= 1 || !this.secret.match(/^[A-Z2-7]+$/)) {
+                  throw new Error("密钥只能由 A-Z，2-7 组成，至少 2 个字符")
+                }
+                let encodedProvider = encodeURIComponent("Steam")
+                let encodedAccount = encodeURIComponent(this.account)
+                let uri =
+                  `otpauth://totp/${encodedProvider}:${encodedAccount}?secret=${this.secret}&issuer=${encodedProvider}&digits=5`
+                this.authDataStore.addAuthItem(uri)
+                this.pageStack.clear()
+              } catch (e) {
+                this.getUIContext().getPromptAction().showToast({
+                  message: `TOTP 错误：${e}`
+                })
+              }
+            })
+            .width(150)
+            .enabled(this.account != "" && this.secret != "")
+        }
+      }
+    }
+    .title("添加 Steam 令牌")
   }
 }

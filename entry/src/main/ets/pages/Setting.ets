@@ -11,7 +11,9 @@ export struct Setting {
   @StorageLink("hideToken") hideToken: boolean = false
   @StorageLink("enhanceNetwork") enhanceNetwork: boolean = false
   @StorageLink("privacyState") privacyState: string = "Unknown"
+  @StorageLink("developmentMode") developmentMode: boolean = false
   @Consume("authDataStore") authDataStore: AuthDataStore
+  private developmentCounter: number = 0
   private appInfo?: bundleManager.BundleInfo = undefined
 
   aboutToAppear(): void {
@@ -94,6 +96,22 @@ export struct Setting {
                 .width("80%")
                 .fontWeight(FontWeight.Bold)
                 .textAlign(TextAlign.Start)
+                .onClick(() => {
+                  this.developmentCounter++
+                  if (this.developmentCounter >= 10) {
+                    this.developmentCounter = 0
+                    this.developmentMode = !this.developmentMode
+                    if (this.developmentMode) {
+                      this.getUIContext().getPromptAction().showToast({
+                        message: "已启用开发者模式"
+                      })
+                    } else {
+                      this.getUIContext().getPromptAction().showToast({
+                        message: "已关闭开发者模式"
+                      })
+                    }
+                  }
+                })
               Toggle({ type: ToggleType.Switch, isOn: this.enhanceNetwork })
                 .onChange((isOn) => {
                   this.enhanceNetwork = isOn

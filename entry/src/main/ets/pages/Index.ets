@@ -1,7 +1,7 @@
 import { SymbolGlyphModifier } from "@ohos.arkui.modifier"
 import { scanCore, scanBarcode } from '@kit.ScanKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { systemDateTime } from '@kit.BasicServicesKit';
+import { BusinessError, systemDateTime } from '@kit.BasicServicesKit';
 import { cryptoFramework } from '@kit.CryptoArchitectureKit';
 import { Setting } from './Setting';
 import { userAuth } from '@kit.UserAuthenticationKit';
@@ -10,7 +10,7 @@ import { AuthData, AuthDataStore, PromptParams, SteamAccountData } from './Base'
 import { SteamConfirmationList } from './SteamConfirmationList';
 import { SteamConfirmationDetail } from './SteamConfirmationDetail';
 import { Confirmation } from './Steam';
-import { Add, AddSecret, AddUri } from "./Add";
+import { Add, AddSecret, AddSteamSecret, AddUri } from "./Add";
 import {
   AddSteamToken,
   SteamConfirmLink,
@@ -59,6 +59,29 @@ struct Index {
     if (this.timer) {
       clearInterval(this.timer)
     }
+  }
+
+  isAvailableAuthType(authType: userAuth.UserAuthType, authLevel: userAuth.AuthTrustLevel): boolean {
+    try {
+      userAuth.getAvailableStatus(authType, authLevel);
+      return true
+    } catch (error) {
+      const err: BusinessError = error as BusinessError;
+      hilog.error(0x0001, '[Auth Sample]',
+        `Current auth trust level [${authType}/${authLevel}] is not supported. Code is ${err?.code}, message is ${err?.message}`);
+    }
+    return false
+  }
+
+  unlock(): void {
+    // 获取认证状态
+    if (!this.isAvailableAuthType(userAuth.UserAuthType.PIN, userAuth.AuthTrustLevel.ATL3) &&
+      !this.isAvailableAuthType(userAuth.UserAuthType.FINGERPRINT, userAuth.AuthTrustLevel.ATL3) &&
+      !this.isAvailableAuthType(userAuth.UserAuthType.FACE, userAuth.AuthTrustLevel.ATL3)) {
+      this.safe = true
+      return
+    }
+    this.onPageShow()
   }
 
   onPageShow(): void {
@@ -138,6 +161,8 @@ struct Index {
       SteamConfirmationDetail({ confirmation: param as Confirmation })
     } else if (name == "SteamRefreshToken") {
       SteamRefreshToken({ authData: param["baseAuthData"], steamAuthData: param["authData"] })
+    } else if (name == "AddSteamSecret") {
+      AddSteamSecret()
     }
   }
 
@@ -367,7 +392,7 @@ struct Index {
         {
           value: "unlock",
           symbolIcon: new SymbolGlyphModifier($r('sys.symbol.lock')),
-          action: () => this.onPageShow()
+          action: () => this.unlock()
         },
       ])
       .title($r("app.string.EntryAbility_label"))
@@ -422,10 +447,10 @@ struct Index {
     try {
       scanBarcode.startScanForResult(getContext(this), options).then((result: scanBarcode.ScanResult) => {
         try {
-        this.authDataStore.addAuthItem(result.originalValue)
-        this.getUIContext().getPromptAction().showToast({
-          message: "成功添加令牌"
-        })
+          this.authDataStore.addAuthItem(result.originalValue)
+          this.getUIContext().getPromptAction().showToast({
+            message: "成功添加令牌"
+          })
         } catch (error) {
           this.getUIContext().getPromptAction().showToast({
             message: `扫码失败：${error}`

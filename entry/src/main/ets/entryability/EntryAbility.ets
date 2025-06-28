@@ -41,6 +41,7 @@ export default class EntryAbility extends UIAbility {
       PersistentStorage.persistProp("enableSafeMode", false)
       PersistentStorage.persistProp("hideToken", false)
       PersistentStorage.persistProp("enhanceNetwork", false)
+      PersistentStorage.persistProp("developmentMode", false)
       PersistentStorage.persistProp("privacyState", "Unknown")
       if (AppStorage.get("enableAutoDarkMode")) {
         this.context.getApplicationContext().setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
