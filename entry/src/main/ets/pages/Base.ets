@@ -6,6 +6,7 @@ import { distributedKVStore } from '@kit.ArkData';
 import { kvManager } from '../entryability/EntryAbility';
 import * as steamapi from './steamapi/custom'
 import * as steam2faapi from './steamapi/service_twofactor'
+import { hilog } from '@kit.PerformanceAnalysisKit';
 
 export class AuthData {
   id: number = 0
@@ -261,6 +262,30 @@ export class AuthDataStore {
       this.kvStore.put(`/data/auth/${data.id}`, authString)
     }
     this.items.push(data)
+    this.onChanged(this.items)
+  }
+
+  async replaceAuthItems(newItems: AuthData[]) {
+    let keys = this.items.filter((item) => item.id >= newItems.length).map((item) => `/data/auth/${item.id}`)
+    hilog.debug(0,"test replace", `delete keys ${keys}`)
+    let entries: Array<distributedKVStore.Entry> = []
+    for (let i = 0; i < newItems.length; i++) {
+      let item = newItems[i]
+      item.id = i
+      let authString = JSON.stringify(item)
+      entries.push({
+        key: `/data/auth/${item.id}`,
+        value: {
+          type: distributedKVStore.ValueType.STRING,
+          value: authString,
+        }
+      })
+    }
+    await this.kvStore?.putBatch(entries)
+    await this.kvStore?.deleteBatch(keys)
+
+    this.next = this.items.length
+    this.items = newItems
     this.onChanged(this.items)
   }
 }

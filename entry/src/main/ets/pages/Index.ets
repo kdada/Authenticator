@@ -22,11 +22,14 @@ import {
   SteamRefreshToken
 } from "./AddSteam";
 import { ShowPrivacyView } from "./PrivacyView";
+import { curves } from "@kit.ArkUI";
 
 @Entry
 @Component
 struct Index {
   @State items: AuthData[] = [];
+  dragIndex: number = -1;
+  @State dragItem?: AuthData = undefined;
   @State showTokens: Record<number, boolean> = [];
   @State progress: number = 0;
   @Provide("pageStack") pageStack: NavPathStack = new NavPathStack();
@@ -314,7 +317,7 @@ struct Index {
           Progress({ value: this.progress, total: 29, type: ProgressType.Linear })
             .width("100%").height(5)
           List() {
-            ForEach(this.items, (item: AuthData) => {
+            ForEach(this.items, (item: AuthData, index: number) => {
               ListItem() {
                 Row() {
                   this.Logo(item.issuer)
@@ -346,6 +349,7 @@ struct Index {
                     })
                 }
                 .width("100%")
+                .opacity(item.id == this.dragItem?.id ? 0 : 1)
                 .onClick(() => {
                   if (!this.safe) {
                     this.getUIContext().getPromptAction().showToast({
@@ -359,6 +363,44 @@ struct Index {
               .swipeAction({ end: this.deleteButton(item.id) })
               .borderColor($r("app.color.item_separator_color"))
               .borderWidth({ bottom: 1 })
+              .onDragStart((event?: DragEvent, extraParams?: string) => {
+                hilog.debug(0,"testa", `drag start: ${item.id}`)
+                this.dragIndex = index
+                this.dragItem = item
+              })
+              .onDragEnter((event?: DragEvent, extraParams?: string) => {
+                if (item.id == this.dragItem?.id) {
+                  return
+                }
+                hilog.debug(0,"testa", `drag enter: ${item.id}`)
+                let currentIndex = this.items.findIndex((element) => element.id == this.dragItem!.id)
+                let targetIndex = this.items.findIndex((element) => element.id == item.id)
+                this.getUIContext()?.animateTo({
+                  curve: curves.interpolatingSpring(0, 1, 400, 38)
+                }, () => {
+                  this.items.splice(currentIndex, 1)
+                  this.items.splice(targetIndex, 0, this.dragItem!)
+                })
+              })
+              .onDrop((dragEvent: DragEvent) => {
+                hilog.debug(0,"testa", `drop: ${item.id}`)
+                this.dragItem = undefined
+                this.authDataStore.replaceAuthItems(this.items)
+              })
+              .onDragEnd(()=>{
+                if (!this.dragItem) {
+                  return
+                }
+                hilog.debug(0,"testa", `drag cancel: ${item.id}`)
+                let currentIndex = this.items.findIndex((element) => element.id == this.dragItem!.id)
+                this.getUIContext()?.animateTo({
+                  curve: curves.interpolatingSpring(0, 1, 400, 38)
+                }, () => {
+                  this.items.splice(currentIndex, 1)
+                  this.items.splice(this.dragIndex, 0, this.dragItem!)
+                  this.dragItem = undefined
+                })
+              })
             }, (item: AuthData) => item.id.toString() + "-" + item.alias + "-" + item.account + "-" + item.password)
           }
         }
