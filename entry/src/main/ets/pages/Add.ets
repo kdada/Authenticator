@@ -175,7 +175,7 @@ export struct Add {
             .height(40)
             .width("100%")
             .onClick(() => {
-              if (this.developmentMode) {
+              if (this.developmentMode || true) {
                 this.pageStack.pushPathByName("AddSteamToken", undefined)
               } else {
                 this.pageStack.pushPathByName("AddSteamSecret", undefined)
