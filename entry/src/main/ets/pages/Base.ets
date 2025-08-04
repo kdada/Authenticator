@@ -1,11 +1,12 @@
 import { systemDateTime } from '@kit.BasicServicesKit';
 import { ComponentContent } from "@kit.ArkUI";
 import { cryptoFramework } from '@kit.CryptoArchitectureKit';
-import { buffer, JSON, uri } from '@kit.ArkTS';
+import { buffer, JSON, uri, util } from '@kit.ArkTS';
 import { distributedKVStore } from '@kit.ArkData';
 import { kvManager } from '../entryability/EntryAbility';
 import * as steamapi from './steamapi/custom'
 import * as steam2faapi from './steamapi/service_twofactor'
+import * as googleapi from './googleapi/otpauth_migrate'
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 export class AuthData {
@@ -94,6 +95,27 @@ export class AuthDataStore {
       bytes[i] = parseInt(bitsString.slice(i * 8, i * 8 + 8), 2)
     }
     return bytes
+  }
+
+  static base32Encode(data: Uint8Array): string {
+    const base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
+    let bits = ''
+    let result = ''
+
+    for (let i = 0; i < data.length; i++) {
+      bits += data[i].toString(2).padStart(8, '0')
+    }
+
+    let index = 0
+    while (index < bits.length) {
+      const chunk = bits.slice(index, index + 5).padEnd(5, '0')
+      const byte = parseInt(chunk, 2)
+      result += base32Chars.charAt(byte)
+      index += 5
+    }
+
+    const padCount = (8 - (result.length % 8)) % 8;
+    return result + '='.repeat(padCount);
   }
 
   static numToUint8Array(num: number): Uint8Array {
@@ -187,8 +209,43 @@ export class AuthDataStore {
     this.onChanged(this.items)
   }
 
+  addGoogleAuthItem(data: string) {
+    let base64 = new util.Base64Helper()
+    let bytes = base64.decodeSync(data, util.Type.BASIC_URL_SAFE)
+    let payload = googleapi.MigrationPayload.decode(bytes)
+    for (let index = 0; index < payload.otpParameters.length; index++) {
+      let parameter = payload.otpParameters[index]
+      if (parameter.type == googleapi.MigrationPayload.OtpType.OTP_TYPE_HOTP) {
+        continue
+      }
+
+      let authdata: AuthData = {
+        id: this.next,
+        alias: parameter.name!,
+        issuer: parameter.issuer!,
+        account: parameter.name!,
+        secret: AuthDataStore.base32Encode(parameter.secret!),
+        digits: parameter.digits == googleapi.MigrationPayload.DigitCount.DIGIT_COUNT_EIGHT ? 8 : 6,
+        password: "",
+        external: "",
+      }
+      authdata.password = this.generatePassword(authdata)
+      this.next++
+      if (this.kvStore) {
+        let authString = JSON.stringify(authdata)
+        this.kvStore.put(`/data/auth/${authdata.id}`, authString)
+      }
+      this.items.push(authdata)
+    }
+    this.onChanged(this.items)
+  }
+
   addAuthItem(data: string) {
     let authURI = new uri.URI(data.trim())
+    if (authURI.scheme == "otpauth-migration") {
+      this.addGoogleAuthItem(authURI.getQueryValue("data"))
+      return
+    }
     if (authURI.scheme != "otpauth" || authURI.host != "totp") {
       throw new Error(`无效的协议：${authURI.scheme}://${authURI.host}`);
     }
@@ -267,7 +324,6 @@ export class AuthDataStore {
 
   async replaceAuthItems(newItems: AuthData[]) {
     let keys = this.items.filter((item) => item.id >= newItems.length).map((item) => `/data/auth/${item.id}`)
-    hilog.debug(0,"test replace", `delete keys ${keys}`)
     let entries: Array<distributedKVStore.Entry> = []
     for (let i = 0; i < newItems.length; i++) {
       let item = newItems[i]

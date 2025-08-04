@@ -2,8 +2,8 @@
   "app": {
     "bundleName": "com.kilodim.authenticator",
     "vendor": "kilodim",
-    "versionCode": 1000015,
-    "versionName": "1.0.14",
+    "versionCode": 1000016,
+    "versionName": "1.0.15",
     "icon": "$media:icon",
     "label": "$string:app_name"
   }
