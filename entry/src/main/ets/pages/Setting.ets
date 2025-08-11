@@ -1,6 +1,6 @@
 import { bundleManager, common, ConfigurationConstant } from "@kit.AbilityKit";
 import { picker, fileIo as fs } from "@kit.CoreFileKit";
-import { AuthDataStore } from "./Base";
+import { AuthDataStore, DefaultToastDuration } from "./Base";
 import { ShowPrivacyView } from "./PrivacyView";
 import { proxyServer } from "./proxy/Proxy"
 
@@ -103,10 +103,12 @@ export struct Setting {
                     this.developmentMode = !this.developmentMode
                     if (this.developmentMode) {
                       this.getUIContext().getPromptAction().showToast({
+                        duration: DefaultToastDuration,
                         message: "已启用开发者模式"
                       })
                     } else {
                       this.getUIContext().getPromptAction().showToast({
+                        duration: DefaultToastDuration,
                         message: "已关闭开发者模式"
                       })
                     }
@@ -167,6 +169,7 @@ export struct Setting {
                   }
                   if (uris.length != 1) {
                     this.getUIContext().getPromptAction().showToast({
+                      duration: DefaultToastDuration,
                       message: "请选择一个文件保存路径"
                     })
                     return
@@ -176,6 +179,7 @@ export struct Setting {
                   fs.writeSync(file.fd, data)
                   fs.close(file)
                   this.getUIContext().getPromptAction().showToast({
+                    duration: DefaultToastDuration,
                     message: "导出完成"
                   })
                   return

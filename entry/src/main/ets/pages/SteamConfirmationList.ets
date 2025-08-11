@@ -1,4 +1,4 @@
-import { SteamAuthData } from "./Base";
+import { DefaultToastDuration, SteamAuthData } from "./Base";
 import { Confirmation, SteamClient } from "./Steam";
 import { SymbolGlyphModifier } from "@kit.ArkUI";
 import { intl } from "@kit.LocalizationKit";
@@ -54,12 +54,14 @@ export struct SteamConfirmationList {
         this.loading = false
         if (err) {
           this.getUIContext().getPromptAction().showToast({
+            duration: DefaultToastDuration,
             message: `查询失败，错误：${err.message}`
           })
           return
         }
         this.steamConfirmations = info
         this.getUIContext().getPromptAction().showToast({
+          duration: DefaultToastDuration,
           message: `查询成功，共 ${info.length} 条待确认记录`
         })
       })
@@ -86,6 +88,7 @@ export struct SteamConfirmationList {
           this.steamAuthData.identitySecret, this.steamAuthData.deviceID, this.steamConfirmations, (err) => {
             if (err) {
               this.getUIContext().getPromptAction().showToast({
+                duration: DefaultToastDuration,
                 message: "确认请求失败，错误：${err.message}"
               })
               return
@@ -106,6 +109,7 @@ export struct SteamConfirmationList {
           this.steamAuthData.identitySecret, this.steamAuthData.deviceID, this.steamConfirmations, (err) => {
             if (err) {
               this.getUIContext().getPromptAction().showToast({
+                duration: DefaultToastDuration,
                 message: "拒绝请求失败，错误：${err.message}"
               })
               return
@@ -133,6 +137,7 @@ export struct SteamConfirmationList {
           this.steamAuthData.identitySecret, this.steamAuthData.deviceID, [item], (err) => {
             if (err) {
               this.getUIContext().getPromptAction().showToast({
+                duration: DefaultToastDuration,
                 message: "确认请求失败，错误：${err.message}"
               })
               return
@@ -155,6 +160,7 @@ export struct SteamConfirmationList {
           this.steamAuthData.identitySecret, this.steamAuthData.deviceID, [item], (err) => {
             if (err) {
               this.getUIContext().getPromptAction().showToast({
+                duration: DefaultToastDuration,
                 message: "拒绝请求失败，错误：${err.message}"
               })
               return
@@ -177,6 +183,7 @@ export struct SteamConfirmationList {
                 if (item.icon && item.icon.length > 0) {
                   Image(item.icon)
                     .width(40)
+                    .height(40)
                     .padding(5)
                     .margin(10)
                     .backgroundColor($r("app.color.vendor_background_color"))

@@ -1,4 +1,4 @@
-import { AuthData, AuthDataStore, PromptParams, SteamAuthData } from "./Base"
+import { AuthData, AuthDataStore, DefaultToastDuration, PromptParams, SteamAuthData } from "./Base"
 import { SymbolGlyphModifier } from "@kit.ArkUI";
 import { JSON, util } from "@kit.ArkTS";
 import { intl } from "@kit.LocalizationKit";
@@ -73,6 +73,7 @@ function buildSteamInput(params: PromptParams<SteamParams>) {
 
           } catch (e) {
             params.data.detail?.getUIContext().getPromptAction().showToast({
+              duration: DefaultToastDuration,
               message: `认证信息格式错误，请确保内容来自 maFile 文件，${e.toString()}`
             })
             return
@@ -137,6 +138,7 @@ export struct Detail {
       this.lastExternalInfo = this.item.external
     } catch (e) {
       this.getUIContext().getPromptAction().showToast({
+        duration: DefaultToastDuration,
         message: `认证信息格式错误，${e.toString()}, 内容：${this.item.external}`
       })
     }
@@ -163,20 +165,24 @@ export struct Detail {
           (err) => {
             if (err) {
               this.getUIContext().getPromptAction().showToast({
+                duration: DefaultToastDuration,
                 message: `Steam 登录失败：${err.message}`
               })
               return
             }
             this.getUIContext().getPromptAction().showToast({
+              duration: DefaultToastDuration,
               message: "Steam 登录成功"
             })
           })
         this.getUIContext().getPromptAction().showToast({
+          duration: DefaultToastDuration,
           message: "开始登录 Steam..."
         })
       })
     } catch (error) {
       this.getUIContext().getPromptAction().showToast({
+        duration: DefaultToastDuration,
         message: `扫码失败：${error}`
       })
     }

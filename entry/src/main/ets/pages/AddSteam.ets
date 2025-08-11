@@ -1,4 +1,4 @@
-import { AuthData, AuthDataStore, SteamAccountData, SteamAuthData } from "./Base";
+import { AuthData, AuthDataStore, DefaultToastDuration, SteamAccountData, SteamAuthData } from "./Base";
 import { SteamClient } from "./Steam";
 import * as steamapi from './steamapi/custom'
 import * as steam2faapi from './steamapi/service_twofactor'
@@ -108,6 +108,7 @@ export struct SteamLogin {
           })
           .onClick(() => {
             this.getUIContext().getPromptAction().showToast({
+              duration: DefaultToastDuration,
               message: `开始登录 Steam...`
             })
             this.loggingIn = true
@@ -115,6 +116,7 @@ export struct SteamLogin {
               this.loggingIn = false
               if (err) {
                 this.getUIContext().getPromptAction().showToast({
+                  duration: DefaultToastDuration,
                   message: `Steam 登录失败：${err.message}`
                 })
                 return
@@ -135,6 +137,7 @@ export struct SteamLogin {
               }
               if (!this.accountData.confirmation) {
                 this.getUIContext().getPromptAction().showToast({
+                  duration: DefaultToastDuration,
                   message: `Steam 登录成功，正在获取认证信息...`
                 })
                 this.loggingIn = true
@@ -142,6 +145,7 @@ export struct SteamLogin {
                   this.loggingIn = false
                   if (err) {
                     this.getUIContext().getPromptAction().showToast({
+                      duration: DefaultToastDuration,
                       message: `Steam 认证信息获取失败：${err.message}`
                     })
                     return
@@ -243,6 +247,7 @@ export struct SteamMFALogin {
               steamapi.EAuthSessionGuardType.k_EAuthSessionGuardType_EmailCode) {
               if (this.steamToken == "") {
                 this.getUIContext().getPromptAction().showToast({
+                  duration: DefaultToastDuration,
                   message: `请先输入令牌`
                 })
                 return
@@ -253,11 +258,13 @@ export struct SteamMFALogin {
                 this.accountData.confirmation!.confirmationType, this.steamToken, (err) => {
                   if (err) {
                     this.getUIContext().getPromptAction().showToast({
+                      duration: DefaultToastDuration,
                       message: `Steam 登录失败：${err.message}`
                     })
                     return
                   }
                   this.getUIContext().getPromptAction().showToast({
+                    duration: DefaultToastDuration,
                     message: `Steam 登录成功，正在获取认证信息...`
                   })
                   this.loggingIn = true
@@ -265,6 +272,7 @@ export struct SteamMFALogin {
                     this.loggingIn = false
                     if (err) {
                       this.getUIContext().getPromptAction().showToast({
+                        duration: DefaultToastDuration,
                         message: `Steam 认证信息获取失败：${err.message}`
                       })
                       return
@@ -275,6 +283,7 @@ export struct SteamMFALogin {
                 })
             } else {
               this.getUIContext().getPromptAction().showToast({
+                duration: DefaultToastDuration,
                 message: `正在获取 Steam 认证信息...`
               })
               this.loggingIn = true
@@ -282,6 +291,7 @@ export struct SteamMFALogin {
                 this.loggingIn = false
                 if (err) {
                   this.getUIContext().getPromptAction().showToast({
+                    duration: DefaultToastDuration,
                     message: `Steam 认证信息获取失败：${err.message}`
                   })
                   return
@@ -342,6 +352,7 @@ export struct SteamLink {
                     return
                   }
                   this.getUIContext().getPromptAction().showToast({
+                    duration: DefaultToastDuration,
                     message: `添加 Authenticator 失败：${err.message}`
                   })
                   return
@@ -413,6 +424,7 @@ export struct SteamConfirmLink {
           .onClick(() => {
             if (this.steamToken == "") {
               this.getUIContext().getPromptAction().showToast({
+                duration: DefaultToastDuration,
                 message: `请先输入验证码`
               })
               return
@@ -432,12 +444,14 @@ export struct SteamConfirmLink {
                 this.linking = false
                 if (err) {
                   this.getUIContext().getPromptAction().showToast({
+                    duration: DefaultToastDuration,
                     message: `添加身份验证器失败：${err.message}`
                   })
                   return
                 }
                 if (resp!.wantMore) {
                   this.getUIContext().getPromptAction().showToast({
+                    duration: DefaultToastDuration,
                     message: `动态生成的令牌和 Steam 不一致，请再点击一次【完成添加】`
                   })
                   return
@@ -473,6 +487,7 @@ export struct SteamConfirmLink {
                 }
                 this.authDataStore.addOneAuthItem(authData, steamAuthData)
                 this.getUIContext().getPromptAction().showToast({
+                  duration: DefaultToastDuration,
                   message: `添加成功`
                 })
                 this.pageStack.clear()
@@ -525,6 +540,7 @@ export struct SteamTransferAuthenticator {
               this.linking = false
               if (err) {
                 this.getUIContext().getPromptAction().showToast({
+                  duration: DefaultToastDuration,
                   message: `迁移身份验证器失败：${err.message}`
                 })
                 return
@@ -583,6 +599,7 @@ export struct SteamConfirmTransferAuthenticator {
                 this.linking = false
                 if (err || !account!.success) {
                   this.getUIContext().getPromptAction().showToast({
+                    duration: DefaultToastDuration,
                     message: `迁移身份验证器失败：${err?.message}`
                   })
                   return
@@ -617,6 +634,7 @@ export struct SteamConfirmTransferAuthenticator {
                 }
                 this.authDataStore.addOneAuthItem(authData, steamAuthData)
                 this.getUIContext().getPromptAction().showToast({
+                  duration: DefaultToastDuration,
                   message: `添加成功`
                 })
                 this.pageStack.clear()
@@ -695,6 +713,7 @@ export struct SteamRefreshToken {
           })
           .onClick(() => {
             this.getUIContext().getPromptAction().showToast({
+              duration: DefaultToastDuration,
               message: `开始登录 Steam...`
             })
             this.loggingIn = true
@@ -702,6 +721,7 @@ export struct SteamRefreshToken {
               this.loggingIn = false
               if (err) {
                 this.getUIContext().getPromptAction().showToast({
+                  duration: DefaultToastDuration,
                   message: `Steam 登录失败：${err.message}`
                 })
                 return
@@ -716,12 +736,14 @@ export struct SteamRefreshToken {
               }
               if (confirmation != steamapi.EAuthSessionGuardType.k_EAuthSessionGuardType_DeviceCode) {
                 this.getUIContext().getPromptAction().showToast({
+                  duration: DefaultToastDuration,
                   message: `Steam 登录成功，但确认类型错误：${confirmation}`
                 })
                 return
               }
 
               this.getUIContext().getPromptAction().showToast({
+                duration: DefaultToastDuration,
                 message: `Steam 登录成功，正在提交令牌...`
               })
 
@@ -731,11 +753,13 @@ export struct SteamRefreshToken {
                   this.loggingIn = false
                   if (err) {
                     this.getUIContext().getPromptAction().showToast({
+                      duration: DefaultToastDuration,
                       message: `Steam 令牌提交失败：${err.message}`
                     })
                     return
                   }
                   this.getUIContext().getPromptAction().showToast({
+                    duration: DefaultToastDuration,
                     message: `Steam 令牌提交成功，正在获取认证信息...`
                   })
                   this.loggingIn = true
@@ -743,6 +767,7 @@ export struct SteamRefreshToken {
                     this.loggingIn = false
                     if (err) {
                       this.getUIContext().getPromptAction().showToast({
+                        duration: DefaultToastDuration,
                         message: `Steam 认证信息获取失败：${err.message}`
                       })
                       return
@@ -752,6 +777,7 @@ export struct SteamRefreshToken {
                     this.authData.external = JSON.stringify(this.steamAuthData)
                     this.authDataStore.saveAuthItem(this.authData.id)
                     this.getUIContext().getPromptAction().showToast({
+                      duration: DefaultToastDuration,
                       message: `更新 Steam 认证信息成功`
                     })
                     this.pageStack.clear()

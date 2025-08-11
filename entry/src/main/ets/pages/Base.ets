@@ -7,7 +7,8 @@ import { kvManager } from '../entryability/EntryAbility';
 import * as steamapi from './steamapi/custom'
 import * as steam2faapi from './steamapi/service_twofactor'
 import * as googleapi from './googleapi/otpauth_migrate'
-import { hilog } from '@kit.PerformanceAnalysisKit';
+
+export let DefaultToastDuration = 5000
 
 export class AuthData {
   id: number = 0

@@ -1,4 +1,4 @@
-import { AuthData, AuthDataStore } from "./Base"
+import { AuthData, AuthDataStore, DefaultToastDuration } from "./Base"
 import { picker, fileIo as fs } from "@kit.CoreFileKit";
 import { util } from "@kit.ArkTS";
 
@@ -118,6 +118,7 @@ export struct Add {
                 }
                 if (uris.length != 1) {
                   this.getUIContext().getPromptAction().showToast({
+                    duration: DefaultToastDuration,
                     message: "请选择一个令牌密钥文件"
                   })
                   return
@@ -131,10 +132,12 @@ export struct Add {
                   let data = util.TextDecoder.create("utf-8").decodeToString(new Uint8Array(buffer))
                   this.authDataStore.recoverAuthItem(data)
                   this.getUIContext().getPromptAction().showToast({
+                    duration: DefaultToastDuration,
                     message: "恢复完成"
                   })
                 } catch (e) {
                   this.getUIContext().getPromptAction().showToast({
+                    duration: DefaultToastDuration,
                     message: `恢复错误：${e}`
                   })
                 }
@@ -346,6 +349,7 @@ export struct AddSecret {
                 this.pageStack.clear()
               } catch (e) {
                 this.getUIContext().getPromptAction().showToast({
+                  duration: DefaultToastDuration,
                   message: `TOTP 错误：${e}`
                 })
               }
@@ -401,6 +405,7 @@ export struct AddUri {
                     count++
                   } catch (e) {
                     this.getUIContext().getPromptAction().showToast({
+                      duration: DefaultToastDuration,
                       message: `已添加 ${count} 个，第 ${i + 1} 行的 TOTP URI 错误：${e}`
                     })
                     return
@@ -507,6 +512,7 @@ export struct AddSteamSecret {
                 this.pageStack.clear()
               } catch (e) {
                 this.getUIContext().getPromptAction().showToast({
+                  duration: DefaultToastDuration,
                   message: `TOTP 错误：${e}`
                 })
               }

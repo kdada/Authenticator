@@ -6,7 +6,7 @@ import { cryptoFramework } from '@kit.CryptoArchitectureKit';
 import { Setting } from './Setting';
 import { userAuth } from '@kit.UserAuthenticationKit';
 import { Detail } from './Detail';
-import { AuthData, AuthDataStore, PromptParams, SteamAccountData } from './Base';
+import { AuthData, AuthDataStore, DefaultToastDuration, PromptParams, SteamAccountData } from './Base';
 import { SteamConfirmationList } from './SteamConfirmationList';
 import { SteamConfirmationDetail } from './SteamConfirmationDetail';
 import { Confirmation } from './Steam';
@@ -337,6 +337,7 @@ struct Index {
                     .onClick(() => {
                       if (!this.safe) {
                         this.getUIContext().getPromptAction().showToast({
+                          duration: DefaultToastDuration,
                           message: "已启用安全模式，请先解锁"
                         })
                         return
@@ -353,6 +354,7 @@ struct Index {
                 .onClick(() => {
                   if (!this.safe) {
                     this.getUIContext().getPromptAction().showToast({
+                      duration: DefaultToastDuration,
                       message: "已启用安全模式，请先解锁"
                     })
                     return
@@ -364,7 +366,7 @@ struct Index {
               .borderColor($r("app.color.item_separator_color"))
               .borderWidth({ bottom: 1 })
               .onDragStart((event?: DragEvent, extraParams?: string) => {
-                hilog.debug(0,"testa", `drag start: ${item.id}`)
+                hilog.debug(0, "testa", `drag start: ${item.id}`)
                 this.dragIndex = index
                 this.dragItem = item
               })
@@ -372,7 +374,7 @@ struct Index {
                 if (item.id == this.dragItem?.id) {
                   return
                 }
-                hilog.debug(0,"testa", `drag enter: ${item.id}`)
+                hilog.debug(0, "testa", `drag enter: ${item.id}`)
                 let currentIndex = this.items.findIndex((element) => element.id == this.dragItem!.id)
                 let targetIndex = this.items.findIndex((element) => element.id == item.id)
                 this.getUIContext()?.animateTo({
@@ -383,15 +385,15 @@ struct Index {
                 })
               })
               .onDrop((dragEvent: DragEvent) => {
-                hilog.debug(0,"testa", `drop: ${item.id}`)
+                hilog.debug(0, "testa", `drop: ${item.id}`)
                 this.dragItem = undefined
                 this.authDataStore.replaceAuthItems(this.items)
               })
-              .onDragEnd(()=>{
+              .onDragEnd(() => {
                 if (!this.dragItem) {
                   return
                 }
-                hilog.debug(0,"testa", `drag cancel: ${item.id}`)
+                hilog.debug(0, "testa", `drag cancel: ${item.id}`)
                 let currentIndex = this.items.findIndex((element) => element.id == this.dragItem!.id)
                 this.getUIContext()?.animateTo({
                   curve: curves.interpolatingSpring(0, 1, 400, 38)
@@ -423,6 +425,7 @@ struct Index {
           action: () => {
             if (!this.safe) {
               this.getUIContext().getPromptAction().showToast({
+                duration: DefaultToastDuration,
                 message: "已启用安全模式，请先解锁"
               })
               return
@@ -458,6 +461,7 @@ struct Index {
     .onClick((event) => {
       if (!this.safe) {
         this.getUIContext().getPromptAction().showToast({
+          duration: DefaultToastDuration,
           message: "已启用安全模式，请先解锁"
         })
         return
@@ -470,6 +474,7 @@ struct Index {
   onAddButtonPressed() {
     if (!this.safe) {
       this.getUIContext().getPromptAction().showToast({
+        duration: DefaultToastDuration,
         message: "已启用安全模式，请先解锁"
       })
       return
@@ -480,6 +485,7 @@ struct Index {
   onScanButtonPressed() {
     if (!this.safe) {
       this.getUIContext().getPromptAction().showToast({
+        duration: DefaultToastDuration,
         message: "已启用安全模式，请先解锁"
       })
       return
@@ -489,20 +495,60 @@ struct Index {
     try {
       scanBarcode.startScanForResult(getContext(this), options).then((result: scanBarcode.ScanResult) => {
         try {
+          if (result.originalValue.startsWith("https://s.team/q/")) {
+            this.loginSteam(result.originalValue)
+            return
+          }
           this.authDataStore.addAuthItem(result.originalValue)
           this.getUIContext().getPromptAction().showToast({
+            duration: DefaultToastDuration,
             message: "成功添加令牌"
           })
         } catch (error) {
           this.getUIContext().getPromptAction().showToast({
+            duration: DefaultToastDuration,
             message: `扫码失败：${error}`
           })
         }
       })
     } catch (error) {
       this.getUIContext().getPromptAction().showToast({
+        duration: DefaultToastDuration,
         message: `扫码失败：${error}`
       })
     }
+  }
+
+  loginSteam(url: String) {
+    let steamTokenCount = 0;
+    let steamAuthDataCount = 0;
+    for (let i = 0; i < this.items.length; i++) {
+      let item = this.items[i]
+      if (item.issuer == "Steam") {
+        steamTokenCount++
+        if (item.external != "") {
+          steamAuthDataCount++
+        }
+      }
+    }
+    if (steamTokenCount <= 0) {
+      this.getUIContext().getPromptAction().showToast({
+        duration: DefaultToastDuration,
+        message: "没有 Steam 令牌，无法扫码登陆 Steam，请先添加 Steam 令牌"
+      })
+      return
+    }
+    if (steamAuthDataCount <= 0) {
+      this.getUIContext().getPromptAction().showToast({
+        duration: DefaultToastDuration,
+        message: "Steam 令牌没有设置认证信息，无法扫码登陆 Steam，请在令牌详情页设置"
+      })
+      return
+    }
+    this.getUIContext().getPromptAction().showToast({
+      duration: DefaultToastDuration,
+      message: "请在 Steam 令牌详情页扫码登陆"
+    })
+    return
   }
 }
