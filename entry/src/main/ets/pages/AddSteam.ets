@@ -1,9 +1,8 @@
-import { AuthData, AuthDataStore, DefaultToastDuration, SteamAccountData, SteamAuthData } from "./Base";
-import { SteamClient } from "./Steam";
-import * as steamapi from './steamapi/custom'
-import * as steam2faapi from './steamapi/service_twofactor'
-import { uri, util } from "@kit.ArkTS";
-import { systemDateTime } from "@kit.BasicServicesKit";
+﻿import { AuthData, AuthDataStore, DefaultToastDuration, SteamAccountData, SteamAuthData } from './Base';
+import { SteamClient } from './Steam';
+import * as steamapi from './steamapi/custom';
+import { uri, util } from '@kit.ArkTS';
+import { systemDateTime } from '@kit.BasicServicesKit';
 
 @Component
 export struct AddSteamToken {
@@ -13,13 +12,13 @@ export struct AddSteamToken {
     NavDestination() {
       RelativeContainer() {
         Column() {
-          Text("流程说明")
+          Text($r('app.string.steam_intro_title'))
             .fontWeight(FontWeight.Bold)
             .margin(10)
-          Text("1. 登录 Steam\n2. 向 Steam 中添加身份验证器")
+          Text($r('app.string.steam_intro_steps'))
             .copyOption(CopyOptions.LocalDevice)
             .fontSize(14)
-          Text("注：期间需要输入 Steam 密码和验证码。\n如遇请求超时或请求失败等问题，请在设\n置中开启增强访问。")
+          Text($r('app.string.steam_intro_note'))
             .copyOption(CopyOptions.LocalDevice)
             .fontSize(14)
             .margin(10)
@@ -29,7 +28,7 @@ export struct AddSteamToken {
           center: { anchor: "__container__", align: VerticalAlign.Center }
         })
 
-        Button("立即开始")
+        Button($r('app.string.steam_start_now'))
           .width(150)
           .margin({ bottom: 20 })
           .alignRules({
@@ -41,7 +40,7 @@ export struct AddSteamToken {
           })
       }
     }
-    .title("添加 Steam 令牌")
+    .title($r('app.string.add_steam_title'))
   }
 }
 
@@ -60,13 +59,13 @@ export struct SteamLogin {
       RelativeContainer() {
         Column() {
           Row() {
-            Text("请输入 Steam 账户名称和密码")
+            Text($r('app.string.steam_login_prompt'))
               .fontWeight(FontWeight.Bold)
           }
           .margin({ bottom: 10 })
 
           Row() {
-            Text("账户名称")
+            Text($r('app.string.steam_account_name'))
               .width("30%")
               .fontWeight(FontWeight.Bold)
               .textAlign(TextAlign.Start)
@@ -80,7 +79,7 @@ export struct SteamLogin {
           .margin({ bottom: 10 })
 
           Row() {
-            Text("密码")
+            Text($r('app.string.steam_password'))
               .width("30%")
               .fontWeight(FontWeight.Bold)
               .textAlign(TextAlign.Start)
@@ -98,7 +97,7 @@ export struct SteamLogin {
           center: { anchor: "__container__", align: VerticalAlign.Center }
         })
 
-        Button("登录")
+        Button($r('app.string.common_login'))
           .enabled((!this.loggingIn) && (this.steamAccount != "") && (this.steamPassword != ""))
           .width(150)
           .margin({ bottom: 20 })
@@ -109,7 +108,7 @@ export struct SteamLogin {
           .onClick(() => {
             this.getUIContext().getPromptAction().showToast({
               duration: DefaultToastDuration,
-              message: `开始登录 Steam...`
+              message: $r('app.string.detail_steam_login_start')
             })
             this.loggingIn = true
             this.steamClient.login(this.steamAccount, this.steamPassword, (err, auth) => {
@@ -117,7 +116,7 @@ export struct SteamLogin {
               if (err) {
                 this.getUIContext().getPromptAction().showToast({
                   duration: DefaultToastDuration,
-                  message: `Steam 登录失败：${err.message}`
+                  message: $r('app.string.detail_steam_login_failed_format', err.message)
                 })
                 return
               }
@@ -138,15 +137,15 @@ export struct SteamLogin {
               if (!this.accountData.confirmation) {
                 this.getUIContext().getPromptAction().showToast({
                   duration: DefaultToastDuration,
-                  message: `Steam 登录成功，正在获取认证信息...`
+                  message: $r('app.string.steam_login_fetching_auth')
                 })
                 this.loggingIn = true
-                this.steamClient.pollTokens(auth!.clientId, auth!.requestId, (err, tokens) => {
+                this.steamClient.pollTokens(auth!.clientId, auth!.requestId, (pollErr, tokens) => {
                   this.loggingIn = false
-                  if (err) {
+                  if (pollErr) {
                     this.getUIContext().getPromptAction().showToast({
                       duration: DefaultToastDuration,
-                      message: `Steam 认证信息获取失败：${err.message}`
+                      message: $r('app.string.steam_auth_fetch_failed_format', pollErr.message)
                     })
                     return
                   }
@@ -159,7 +158,7 @@ export struct SteamLogin {
           })
       }
     }
-    .title("登录 Steam")
+    .title($r('app.string.steam_login_title'))
   }
 }
 
@@ -178,7 +177,7 @@ export struct SteamMFALogin {
         if (this.accountData.confirmation!.confirmationType ==
         steamapi.EAuthSessionGuardType.k_EAuthSessionGuardType_DeviceConfirmation) {
           Column() {
-            Text("Steam 启用了多重身份验证，请在其他设备上确认本次登录，确认完成后再点击【完成登录】")
+            Text($r('app.string.steam_mfa_device_confirmation'))
               .fontWeight(FontWeight.Bold)
               .margin(10)
           }
@@ -189,7 +188,7 @@ export struct SteamMFALogin {
         } else if (this.accountData.confirmation!.confirmationType ==
         steamapi.EAuthSessionGuardType.k_EAuthSessionGuardType_EmailConfirmation) {
           Column() {
-            Text("Steam 启用了多重身份验证，确认邮件已发送，请点击邮件内的确认链接后再点击【完成登录】")
+            Text($r('app.string.steam_mfa_email_confirmation'))
               .fontWeight(FontWeight.Bold)
               .margin(10)
           }
@@ -200,7 +199,7 @@ export struct SteamMFALogin {
         } else if (this.accountData.confirmation!.confirmationType ==
         steamapi.EAuthSessionGuardType.k_EAuthSessionGuardType_DeviceCode) {
           Column() {
-            Text("Steam 启用了多重身份验证，请从已绑定的身份验证器获取令牌并输入")
+            Text($r('app.string.steam_mfa_device_code'))
               .fontWeight(FontWeight.Bold)
               .margin(10)
             TextInput()
@@ -216,7 +215,7 @@ export struct SteamMFALogin {
         } else if (this.accountData.confirmation!.confirmationType ==
         steamapi.EAuthSessionGuardType.k_EAuthSessionGuardType_EmailCode) {
           Column() {
-            Text("Steam 启用了多重身份验证，令牌已通过邮件发送，请输入令牌")
+            Text($r('app.string.steam_mfa_email_code'))
               .fontWeight(FontWeight.Bold)
               .margin(10)
             TextInput()
@@ -231,7 +230,7 @@ export struct SteamMFALogin {
           })
         }
 
-        Button("完成登录")
+        Button($r('app.string.steam_complete_login'))
           .enabled(!this.loggingIn)
           .width(150)
           .margin({ bottom: 20 })
@@ -248,7 +247,7 @@ export struct SteamMFALogin {
               if (this.steamToken == "") {
                 this.getUIContext().getPromptAction().showToast({
                   duration: DefaultToastDuration,
-                  message: `请先输入令牌`
+                  message: $r('app.string.common_enter_token_first')
                 })
                 return
               }
@@ -259,21 +258,21 @@ export struct SteamMFALogin {
                   if (err) {
                     this.getUIContext().getPromptAction().showToast({
                       duration: DefaultToastDuration,
-                      message: `Steam 登录失败：${err.message}`
+                      message: $r('app.string.detail_steam_login_failed_format', err.message)
                     })
                     return
                   }
                   this.getUIContext().getPromptAction().showToast({
                     duration: DefaultToastDuration,
-                    message: `Steam 登录成功，正在获取认证信息...`
+                    message: $r('app.string.steam_login_fetching_auth')
                   })
                   this.loggingIn = true
-                  this.steamClient.pollTokens(auth.clientId, auth.requestId, (err, tokens) => {
+                  this.steamClient.pollTokens(auth.clientId, auth.requestId, (pollErr, tokens) => {
                     this.loggingIn = false
-                    if (err) {
+                    if (pollErr) {
                       this.getUIContext().getPromptAction().showToast({
                         duration: DefaultToastDuration,
-                        message: `Steam 认证信息获取失败：${err.message}`
+                        message: $r('app.string.steam_auth_fetch_failed_format', pollErr.message)
                       })
                       return
                     }
@@ -284,7 +283,7 @@ export struct SteamMFALogin {
             } else {
               this.getUIContext().getPromptAction().showToast({
                 duration: DefaultToastDuration,
-                message: `正在获取 Steam 认证信息...`
+                message: $r('app.string.steam_fetching_auth')
               })
               this.loggingIn = true
               this.steamClient.pollTokens(auth.clientId, auth.requestId, (err, tokens) => {
@@ -292,7 +291,7 @@ export struct SteamMFALogin {
                 if (err) {
                   this.getUIContext().getPromptAction().showToast({
                     duration: DefaultToastDuration,
-                    message: `Steam 认证信息获取失败：${err.message}`
+                    message: $r('app.string.steam_auth_fetch_failed_format', err.message)
                   })
                   return
                 }
@@ -303,7 +302,7 @@ export struct SteamMFALogin {
           })
       }
     }
-    .title("添加 Steam 令牌")
+    .title($r('app.string.add_steam_title'))
   }
 }
 
@@ -319,7 +318,7 @@ export struct SteamLink {
     NavDestination() {
       RelativeContainer() {
         Column() {
-          Text(`${this.accountData.tokens!.accountName} 登录成功，请点击【添加】按钮将 Authenticator 添加到 Steam`)
+          Text($r('app.string.steam_link_success_format', this.accountData.tokens!.accountName))
             .fontWeight(FontWeight.Bold)
             .margin(10)
         }
@@ -328,7 +327,7 @@ export struct SteamLink {
           center: { anchor: "__container__", align: VerticalAlign.Center }
         })
 
-        Button("添加")
+        Button($r('app.string.common_add'))
           .enabled(!this.linking)
           .width(150)
           .margin({ bottom: 20 })
@@ -344,7 +343,7 @@ export struct SteamLink {
             let tokens = this.accountData.tokens!
             this.linking = true
             this.steamClient.addAuthenticator(auth.steamid.toString(), tokens.refreshToken, this.accountData.deviceId,
-              (err, auth) => {
+              (err, authData) => {
                 this.linking = false
                 if (err) {
                   if (err.message == "DuplicateRequest") {
@@ -353,18 +352,18 @@ export struct SteamLink {
                   }
                   this.getUIContext().getPromptAction().showToast({
                     duration: DefaultToastDuration,
-                    message: `添加 Authenticator 失败：${err.message}`
+                    message: $r('app.string.steam_add_authenticator_failed_format', err.message)
                   })
                   return
                 }
 
-                this.accountData.authenticator = auth
+                this.accountData.authenticator = authData
                 this.pageStack.pushPathByName("SteamConfirmLink", this.accountData)
               })
           })
       }
     }
-    .title("添加 Steam 令牌")
+    .title($r('app.string.add_steam_title'))
   }
 }
 
@@ -383,7 +382,7 @@ export struct SteamConfirmLink {
       RelativeContainer() {
         if (this.accountData.authenticator!.confirmType == 1/*SMS*/) {
           Column() {
-            Text("正在向 Steam 添加身份验证器，请输入短信验证码")
+            Text($r('app.string.steam_confirm_link_sms'))
               .fontWeight(FontWeight.Bold)
               .margin(10)
             TextInput()
@@ -398,7 +397,7 @@ export struct SteamConfirmLink {
           })
         } else if (this.accountData.authenticator!.confirmType == 3/*Email*/) {
           Column() {
-            Text("正在向 Steam 添加身份验证器，验证码已通过邮件发送，请输入验证码")
+            Text($r('app.string.steam_confirm_link_email'))
               .fontWeight(FontWeight.Bold)
               .margin(10)
             TextInput()
@@ -413,7 +412,7 @@ export struct SteamConfirmLink {
           })
         }
 
-        Button("完成添加")
+        Button($r('app.string.steam_complete_add'))
           .enabled(!this.linking)
           .width(150)
           .margin({ bottom: 20 })
@@ -425,7 +424,7 @@ export struct SteamConfirmLink {
             if (this.steamToken == "") {
               this.getUIContext().getPromptAction().showToast({
                 duration: DefaultToastDuration,
-                message: `请先输入验证码`
+                message: $r('app.string.common_enter_code_first')
               })
               return
             }
@@ -445,14 +444,14 @@ export struct SteamConfirmLink {
                 if (err) {
                   this.getUIContext().getPromptAction().showToast({
                     duration: DefaultToastDuration,
-                    message: `添加身份验证器失败：${err.message}`
+                    message: $r('app.string.steam_finalize_failed_format', err.message)
                   })
                   return
                 }
                 if (resp!.wantMore) {
                   this.getUIContext().getPromptAction().showToast({
                     duration: DefaultToastDuration,
-                    message: `动态生成的令牌和 Steam 不一致，请再点击一次【完成添加】`
+                    message: $r('app.string.steam_token_mismatch')
                   })
                   return
                 }
@@ -460,7 +459,8 @@ export struct SteamConfirmLink {
                 this.accountData.finalizeAuthenticator = resp
                 let authURI = new uri.URI(authenticator.uri)
                 let authData: AuthData = {
-                  id: 0,
+                  uuid: "",
+                  order: 0,
                   alias: "Steam",
                   issuer: "Steam",
                   account: tokens.accountName,
@@ -468,6 +468,7 @@ export struct SteamConfirmLink {
                   digits: 5,
                   password: token,
                   external: "",
+                  tokenIconPath: ""
                 }
 
                 let helper = new util.Base64Helper()
@@ -476,7 +477,7 @@ export struct SteamConfirmLink {
                   steamID: auth.steamid.toString(),
                   serialNumber: authenticator.serialNumber.toString(),
                   revocationCode: authenticator.revocationCode,
-                  shardSecret: helper.encodeToStringSync(authenticator.sharedSecret),
+                  sharedSecret: helper.encodeToStringSync(authenticator.sharedSecret),
                   tokenGID: authenticator.tokenGid,
                   identitySecret: helper.encodeToStringSync(authenticator.identitySecret),
                   uri: authenticator.uri,
@@ -488,14 +489,14 @@ export struct SteamConfirmLink {
                 this.authDataStore.addOneAuthItem(authData, steamAuthData)
                 this.getUIContext().getPromptAction().showToast({
                   duration: DefaultToastDuration,
-                  message: `添加成功`
+                  message: $r('app.string.steam_add_success')
                 })
                 this.pageStack.clear()
               })
           })
       }
     }
-    .title("添加 Steam 令牌")
+    .title($r('app.string.add_steam_title'))
   }
 }
 
@@ -511,11 +512,11 @@ export struct SteamTransferAuthenticator {
     NavDestination() {
       RelativeContainer() {
         Column() {
-          Text("已经添加过其他身份验证器，是否迁移？")
+          Text($r('app.string.steam_transfer_prompt'))
             .fontWeight(FontWeight.Bold)
             .margin(10)
 
-          Text("特别说明：请确保 Steam 账户已经绑定了手机号码，否则将无法进行迁移")
+          Text($r('app.string.steam_transfer_note'))
             .fontWeight(FontWeight.Bold)
             .margin(10)
         }
@@ -524,7 +525,7 @@ export struct SteamTransferAuthenticator {
           center: { anchor: "__container__", align: VerticalAlign.Center }
         })
 
-        Button("迁移")
+        Button($r('app.string.steam_transfer_button'))
           .enabled(!this.linking)
           .width(150)
           .margin({ bottom: 20 })
@@ -541,7 +542,7 @@ export struct SteamTransferAuthenticator {
               if (err) {
                 this.getUIContext().getPromptAction().showToast({
                   duration: DefaultToastDuration,
-                  message: `迁移身份验证器失败：${err.message}`
+                  message: $r('app.string.steam_transfer_failed_format', err.message)
                 })
                 return
               }
@@ -550,7 +551,7 @@ export struct SteamTransferAuthenticator {
           })
       }
     }
-    .title("添加 Steam 令牌")
+    .title($r('app.string.add_steam_title'))
   }
 }
 
@@ -568,7 +569,7 @@ export struct SteamConfirmTransferAuthenticator {
     NavDestination() {
       RelativeContainer() {
         Column() {
-          Text("正在迁移 Steam 身份验证器，请输入短信验证码")
+          Text($r('app.string.steam_transfer_sms'))
             .fontWeight(FontWeight.Bold)
             .margin(10)
           TextInput()
@@ -582,7 +583,7 @@ export struct SteamConfirmTransferAuthenticator {
           center: { anchor: "__container__", align: VerticalAlign.Center }
         })
 
-        Button("完成迁移")
+        Button($r('app.string.steam_complete_transfer'))
           .enabled(!this.linking && this.steamToken != "")
           .width(150)
           .margin({ bottom: 20 })
@@ -600,14 +601,15 @@ export struct SteamConfirmTransferAuthenticator {
                 if (err || !account!.success) {
                   this.getUIContext().getPromptAction().showToast({
                     duration: DefaultToastDuration,
-                    message: `迁移身份验证器失败：${err?.message}`
+                    message: $r('app.string.steam_transfer_failed_format', `${err?.message}`)
                   })
                   return
                 }
                 let replacementToken = account!.replacementToken!
                 let authURI = new uri.URI(replacementToken.uri!)
                 let authData: AuthData = {
-                  id: 0,
+                  uuid: "",
+                  order: 0,
                   alias: "Steam",
                   issuer: "Steam",
                   account: tokens.accountName,
@@ -615,6 +617,7 @@ export struct SteamConfirmTransferAuthenticator {
                   digits: 5,
                   password: "",
                   external: "",
+                  tokenIconPath: ""
                 }
 
                 let helper = new util.Base64Helper()
@@ -623,7 +626,7 @@ export struct SteamConfirmTransferAuthenticator {
                   steamID: auth.steamid.toString(),
                   serialNumber: replacementToken.serialNumber!.toString(),
                   revocationCode: replacementToken.revocationCode!,
-                  shardSecret: helper.encodeToStringSync(replacementToken.sharedSecret),
+                  sharedSecret: helper.encodeToStringSync(replacementToken.sharedSecret),
                   tokenGID: replacementToken.tokenGid!,
                   identitySecret: helper.encodeToStringSync(replacementToken.identitySecret),
                   uri: replacementToken.uri!,
@@ -635,14 +638,14 @@ export struct SteamConfirmTransferAuthenticator {
                 this.authDataStore.addOneAuthItem(authData, steamAuthData)
                 this.getUIContext().getPromptAction().showToast({
                   duration: DefaultToastDuration,
-                  message: `添加成功`
+                  message: $r('app.string.steam_add_success')
                 })
                 this.pageStack.clear()
               })
           })
       }
     }
-    .title("添加 Steam 令牌")
+    .title($r('app.string.add_steam_title'))
   }
 }
 
@@ -667,13 +670,13 @@ export struct SteamRefreshToken {
       RelativeContainer() {
         Column() {
           Row() {
-            Text("更新需要重新登录 Steam，请输入密码")
+            Text($r('app.string.steam_refresh_prompt'))
               .fontWeight(FontWeight.Bold)
           }
           .margin({ bottom: 10 })
 
           Row() {
-            Text("账户名称")
+            Text($r('app.string.steam_account_name'))
               .width("30%")
               .fontWeight(FontWeight.Bold)
               .textAlign(TextAlign.Start)
@@ -685,7 +688,7 @@ export struct SteamRefreshToken {
           .margin({ bottom: 10 })
 
           Row() {
-            Text("密码")
+            Text($r('app.string.steam_password'))
               .width("30%")
               .fontWeight(FontWeight.Bold)
               .textAlign(TextAlign.Start)
@@ -703,7 +706,7 @@ export struct SteamRefreshToken {
           center: { anchor: "__container__", align: VerticalAlign.Center }
         })
 
-        Button("登录")
+        Button($r('app.string.common_login'))
           .enabled((!this.loggingIn) && (this.steamAccount != "") && (this.steamPassword != ""))
           .width(150)
           .margin({ bottom: 20 })
@@ -714,7 +717,7 @@ export struct SteamRefreshToken {
           .onClick(() => {
             this.getUIContext().getPromptAction().showToast({
               duration: DefaultToastDuration,
-              message: `开始登录 Steam...`
+              message: $r('app.string.detail_steam_login_start')
             })
             this.loggingIn = true
             this.steamClient.login(this.steamAccount, this.steamPassword, (err, auth) => {
@@ -722,7 +725,7 @@ export struct SteamRefreshToken {
               if (err) {
                 this.getUIContext().getPromptAction().showToast({
                   duration: DefaultToastDuration,
-                  message: `Steam 登录失败：${err.message}`
+                  message: $r('app.string.detail_steam_login_failed_format', err.message)
                 })
                 return
               }
@@ -737,48 +740,48 @@ export struct SteamRefreshToken {
               if (confirmation != steamapi.EAuthSessionGuardType.k_EAuthSessionGuardType_DeviceCode) {
                 this.getUIContext().getPromptAction().showToast({
                   duration: DefaultToastDuration,
-                  message: `Steam 登录成功，但确认类型错误：${confirmation}`
+                  message: $r('app.string.steam_refresh_confirmation_type_error_format', confirmation)
                 })
                 return
               }
 
               this.getUIContext().getPromptAction().showToast({
                 duration: DefaultToastDuration,
-                message: `Steam 登录成功，正在提交令牌...`
+                message: $r('app.string.steam_refresh_submitting')
               })
 
               this.loggingIn = true
               this.steamClient.submitLoginCode(auth!.steamid, auth!.clientId,
-                confirmation, this.authData.password, (err) => {
+                confirmation, this.authData.password, (submitErr) => {
                   this.loggingIn = false
-                  if (err) {
+                  if (submitErr) {
                     this.getUIContext().getPromptAction().showToast({
                       duration: DefaultToastDuration,
-                      message: `Steam 令牌提交失败：${err.message}`
+                      message: $r('app.string.steam_refresh_submit_failed_format', submitErr.message)
                     })
                     return
                   }
                   this.getUIContext().getPromptAction().showToast({
                     duration: DefaultToastDuration,
-                    message: `Steam 令牌提交成功，正在获取认证信息...`
+                    message: $r('app.string.steam_refresh_submit_success')
                   })
                   this.loggingIn = true
-                  this.steamClient.pollTokens(auth!.clientId, auth!.requestId, (err, tokens) => {
+                  this.steamClient.pollTokens(auth!.clientId, auth!.requestId, (pollErr, tokens) => {
                     this.loggingIn = false
-                    if (err) {
+                    if (pollErr) {
                       this.getUIContext().getPromptAction().showToast({
                         duration: DefaultToastDuration,
-                        message: `Steam 认证信息获取失败：${err.message}`
+                        message: $r('app.string.steam_auth_fetch_failed_format', pollErr.message)
                       })
                       return
                     }
                     this.steamAuthData.refreshToken = tokens!.refreshToken
                     this.steamAuthData.accessToken = tokens!.accessToken
                     this.authData.external = JSON.stringify(this.steamAuthData)
-                    this.authDataStore.saveAuthItem(this.authData.id)
+                    this.authDataStore.saveAuthItem(this.authData.uuid)
                     this.getUIContext().getPromptAction().showToast({
                       duration: DefaultToastDuration,
-                      message: `更新 Steam 认证信息成功`
+                      message: $r('app.string.steam_refresh_success')
                     })
                     this.pageStack.clear()
                   })
@@ -787,6 +790,6 @@ export struct SteamRefreshToken {
           })
       }
     }
-    .title("更新 Steam 认证信息过期时间")
+    .title($r('app.string.steam_refresh_title'))
   }
 }

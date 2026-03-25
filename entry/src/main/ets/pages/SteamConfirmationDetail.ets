@@ -1,5 +1,5 @@
-import { Confirmation } from "./Steam"
-import { intl } from "@kit.LocalizationKit"
+import { Confirmation } from './Steam'
+import { intl } from '@kit.LocalizationKit'
 
 @Component
 export struct SteamConfirmationDetail {
@@ -10,7 +10,7 @@ export struct SteamConfirmationDetail {
       Scroll() {
         Column() {
           Row() {
-            Text("标题")
+            Text($r('app.string.confirm_detail_headline'))
               .width("30%")
               .textAlign(TextAlign.Start)
             Text(this.confirmation.headline)
@@ -22,7 +22,7 @@ export struct SteamConfirmationDetail {
 
           if (this.confirmation.summary.join(",").length > 0) {
             Row() {
-              Text("描述")
+              Text($r('app.string.confirm_detail_summary'))
                 .width("30%")
                 .textAlign(TextAlign.Start)
               Text(this.confirmation.summary.join(","))
@@ -34,7 +34,7 @@ export struct SteamConfirmationDetail {
           }
 
           Row() {
-            Text("创建时间")
+            Text($r('app.string.confirm_detail_created_at'))
               .width("30%")
               .textAlign(TextAlign.Start)
             Text((new Date(this.confirmation.creation_time * 1000)).toLocaleString((new intl.Locale()).toString(),
@@ -46,7 +46,7 @@ export struct SteamConfirmationDetail {
           .alignItems(VerticalAlign.Center)
 
           Row() {
-            Text("创建者 ID")
+            Text($r('app.string.confirm_detail_creator_id'))
               .width("30%")
               .textAlign(TextAlign.Start)
             Text(this.confirmation.creator_id)
@@ -57,7 +57,7 @@ export struct SteamConfirmationDetail {
           .alignItems(VerticalAlign.Center)
 
           Row() {
-            Text("类型编号")
+            Text($r('app.string.confirm_detail_type_id'))
               .width("30%")
               .textAlign(TextAlign.Start)
             Text(this.confirmation.type.toString())
@@ -68,7 +68,7 @@ export struct SteamConfirmationDetail {
           .alignItems(VerticalAlign.Center)
 
           Row() {
-            Text("类型名称")
+            Text($r('app.string.confirm_detail_type_name'))
               .width("30%")
               .textAlign(TextAlign.Start)
             Text(this.confirmation.type_name)
@@ -79,7 +79,7 @@ export struct SteamConfirmationDetail {
           .alignItems(VerticalAlign.Center)
 
           Row() {
-            Text("确认 ID")
+            Text($r('app.string.confirm_detail_confirm_id'))
               .width("30%")
               .textAlign(TextAlign.Start)
             Text(this.confirmation.id)
@@ -89,9 +89,8 @@ export struct SteamConfirmationDetail {
           .padding({ top: 5, bottom: 5 })
           .alignItems(VerticalAlign.Center)
 
-
           Row() {
-            Text("一次性编号")
+            Text($r('app.string.confirm_disposable_number'))
               .width("30%")
               .textAlign(TextAlign.Start)
             Text(this.confirmation.nonce)
@@ -101,10 +100,9 @@ export struct SteamConfirmationDetail {
           .padding({ top: 5, bottom: 5 })
           .alignItems(VerticalAlign.Center)
 
-
           if (this.confirmation.icon && this.confirmation.icon.length > 0) {
             Row() {
-              Text("图标地址")
+              Text($r('app.string.confirm_detail_icon_url'))
                 .width("30%")
                 .textAlign(TextAlign.Start)
               Text(this.confirmation.icon)
@@ -114,11 +112,9 @@ export struct SteamConfirmationDetail {
             .padding({ top: 5, bottom: 5 })
             .alignItems(VerticalAlign.Center)
           }
-
-
         }
       }
     }
-    .title("确认详情")
+    .title($r('app.string.confirm_detail_title'))
   }
 }

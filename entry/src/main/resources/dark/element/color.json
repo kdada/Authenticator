@@ -31,6 +31,14 @@
     {
       "name": "start_window_background",
       "value": "#000000"
+    },
+    {
+      "name": "icon_pack_row_background",
+      "value": "#191919"
+    },
+    {
+      "name": "icon_picker_background",
+      "value": "#000000"
     }
   ]
 }

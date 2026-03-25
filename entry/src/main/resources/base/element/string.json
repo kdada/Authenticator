@@ -23,6 +23,706 @@
     {
       "name": "EntryAbility_label",
       "value": "KDAuth"
+    },
+    {
+      "name": "common_cancel",
+      "value": "Cancel"
+    },
+    {
+      "name": "common_confirm",
+      "value": "Confirm"
+    },
+    {
+      "name": "common_add",
+      "value": "Add"
+    },
+    {
+      "name": "common_login",
+      "value": "Login"
+    },
+    {
+      "name": "common_yes",
+      "value": "Yes"
+    },
+    {
+      "name": "common_safe_mode_unlock_first",
+      "value": "Safe mode is enabled. Please unlock first."
+    },
+    {
+      "name": "common_enter_token_first",
+      "value": "Please enter the token first."
+    },
+    {
+      "name": "common_enter_code_first",
+      "value": "Please enter the verification code first."
+    },
+    {
+      "name": "common_token_copied",
+      "value": "Token copied."
+    },
+    {
+      "name": "base_unknown_file_format",
+      "value": "Unknown file format."
+    },
+    {
+      "name": "base_invalid_scheme_format",
+      "value": "Invalid scheme: %s"
+    },
+    {
+      "name": "base_recover_item_missing_format",
+      "value": "Token secret #%d is missing %s"
+    },
+    {
+      "name": "base_missing_format",
+      "value": "Missing %s"
+    },
+    {
+      "name": "add_title",
+      "value": "Add"
+    },
+    {
+      "name": "add_totp_secret_title",
+      "value": "Add via TOTP secret"
+    },
+    {
+      "name": "add_totp_secret_desc",
+      "value": "A TOTP secret is a string made of A-Z and 2-7, for example: ABCDEFGHIJ234567"
+    },
+    {
+      "name": "add_totp_uri_title",
+      "value": "Add via TOTP URI"
+    },
+    {
+      "name": "add_totp_uri_desc",
+      "value": "A TOTP URI starts with otpauth://totp/, for example: otpauth://totp/Example:alic e@example.com?secret=ABCDEFGHIJ234567&issuer=Example"
+    },
+    {
+      "name": "add_restore_title",
+      "value": "Restore from token secret file (*.atsf)"
+    },
+    {
+      "name": "add_restore_desc",
+      "value": "The token secret file (*.atsf) can be exported from Settings. Editing the file may make restore fail. Restore does not overwrite existing tokens, so remove duplicates manually if needed."
+    },
+    {
+      "name": "add_restore_pick_single",
+      "value": "Please select one token secret file."
+    },
+    {
+      "name": "add_restore_success",
+      "value": "Restore completed. Total %d, Repeat %d."
+    },
+    {
+      "name": "add_restore_error_format",
+      "value": "Restore failed: %s"
+    },
+    {
+      "name": "add_steam_title",
+      "value": "Add Steam token"
+    },
+    {
+      "name": "add_steam_desc",
+      "value": "Supports 5-character tokens, QR login, and trade confirmations."
+    },
+    {
+      "name": "add_secret_title",
+      "value": "Add via TOTP secret"
+    },
+    {
+      "name": "add_secret_provider",
+      "value": "Provider"
+    },
+    {
+      "name": "add_secret_provider_placeholder",
+      "value": "Enter provider name"
+    },
+    {
+      "name": "add_secret_account",
+      "value": "Account"
+    },
+    {
+      "name": "add_secret_account_placeholder",
+      "value": "Username or email"
+    },
+    {
+      "name": "add_secret_secret",
+      "value": "Secret"
+    },
+    {
+      "name": "add_secret_secret_placeholder",
+      "value": "Characters A-Z and 2-7 only"
+    },
+    {
+      "name": "add_secret_digits",
+      "value": "Digits"
+    },
+    {
+      "name": "add_secret_invalid_secret",
+      "value": "The secret must contain only A-Z and 2-7, with at least 2 characters."
+    },
+    {
+      "name": "add_secret_error_format",
+      "value": "TOTP error: %s"
+    },
+    {
+      "name": "add_uri_title",
+      "value": "Add via TOTP URI"
+    },
+    {
+      "name": "add_uri_heading",
+      "value": "Enter TOTP URI"
+    },
+    {
+      "name": "add_uri_desc",
+      "value": "If you need to add multiple entries, enter one URI per line."
+    },
+    {
+      "name": "add_uri_partial_error_format",
+      "value": "Added %d item(s). The TOTP URI on line %d is invalid: %s"
+    },
+    {
+      "name": "add_steam_secret_title",
+      "value": "Add Steam token"
+    },
+    {
+      "name": "index_auth_title",
+      "value": "Please authenticate"
+    },
+    {
+      "name": "index_empty",
+      "value": "No token has been added yet.\nTap the add or scan button in the top-right corner to add one."
+    },
+    {
+      "name": "index_add_success",
+      "value": "Token added successfully."
+    },
+    {
+      "name": "index_no_steam_token",
+      "value": "No Steam token found. Scan login to Steam is unavailable. Please add a Steam token first."
+    },
+    {
+      "name": "index_no_steam_auth",
+      "value": "The Steam token has no authentication info set. Scan login to Steam is unavailable. Please configure it in the token details page."
+    },
+    {
+      "name": "index_go_to_steam_detail",
+      "value": "Please scan to log in on the Steam token details page."
+    },
+    {
+      "name": "detail_steam_input_title",
+      "value": "Enter Steam auth info"
+    },
+    {
+      "name": "detail_steam_input_desc",
+      "value": "After authentication is configured, you can use Steam QR login and trade confirmations."
+    },
+    {
+      "name": "detail_steam_input_error_format",
+      "value": "Invalid auth info format. Please make sure the content comes from a maFile: %s"
+    },
+    {
+      "name": "detail_steam_invalid_error_format",
+      "value": "Invalid auth info format: %s, content: %s"
+    },
+    {
+      "name": "detail_steam_login_failed_format",
+      "value": "Steam login failed: %s"
+    },
+    {
+      "name": "detail_steam_login_success",
+      "value": "Steam login succeeded."
+    },
+    {
+      "name": "detail_steam_login_start",
+      "value": "Starting Steam login..."
+    },
+    {
+      "name": "detail_steam_section_title",
+      "value": "----- Steam Authentication -----"
+    },
+    {
+      "name": "detail_steam_section_desc",
+      "value": "If QR login or trade confirmations time out or fail, enable Enhanced Network in Settings."
+    },
+    {
+      "name": "detail_steam_account",
+      "value": "Steam account"
+    },
+    {
+      "name": "detail_steam_id",
+      "value": "Steam ID"
+    },
+    {
+      "name": "detail_device_id",
+      "value": "Device ID"
+    },
+    {
+      "name": "detail_expire_time",
+      "value": "Expiration"
+    },
+    {
+      "name": "detail_reset",
+      "value": "Reset"
+    },
+    {
+      "name": "detail_update_expire",
+      "value": "Refresh expiry"
+    },
+    {
+      "name": "detail_setup_steam",
+      "value": "Set up Steam auth info"
+    },
+    {
+      "name": "detail_alias",
+      "value": "Alias"
+    },
+    {
+      "name": "detail_account",
+      "value": "Account"
+    },
+    {
+      "name": "detail_issuer",
+      "value": "Issuer"
+    },
+    {
+      "name": "detail_digits",
+      "value": "Digits"
+    },
+    {
+      "name": "setting_title",
+      "value": "Settings"
+    },
+    {
+      "name": "setting_auto_dark",
+      "value": "Follow system dark mode"
+    },
+    {
+      "name": "setting_auto_dark_desc",
+      "value": "When enabled, the app follows the system appearance automatically."
+    },
+    {
+      "name": "setting_safe_mode",
+      "value": "Enable safe mode"
+    },
+    {
+      "name": "setting_safe_mode_desc",
+      "value": "When enabled, opening the app requires biometric or PIN authentication before viewing tokens. It takes effect the next time the app starts."
+    },
+    {
+      "name": "setting_hide_token",
+      "value": "Hide tokens"
+    },
+    {
+      "name": "setting_hide_token_desc",
+      "value": "When enabled, tokens on the home page are hidden by default. Tap to reveal them. The details page is not affected."
+    },
+    {
+      "name": "icon_pack_title",
+      "value": "Icon packs"
+    },
+    {
+      "name": "icon_pack_desc",
+      "value": "Use built-in issuer icons or import Aegis-compatible zip packs."
+    },
+    {
+      "name": "icon_pack_manage",
+      "value": "Manage"
+    },
+    {
+      "name": "icon_pack_hide",
+      "value": "Hide"
+    },
+    {
+      "name": "icon_pack_builtin",
+      "value": "Built-in"
+    },
+    {
+      "name": "icon_pack_builtin_desc",
+      "value": "Default issuer icon library"
+    },
+    {
+      "name": "icon_pack_import",
+      "value": "Import zip"
+    },
+    {
+      "name": "icon_pack_remove",
+      "value": "Remove"
+    },
+    {
+      "name": "icon_pack_import_success",
+      "value": "Icon pack imported"
+    },
+    {
+      "name": "icon_pack_import_failed_format",
+      "value": "Import failed: %s"
+    },
+    {
+      "name": "icon_pack_remove_success",
+      "value": "Icon pack removed"
+    },
+    {
+      "name": "icon_pack_remove_failed_format",
+      "value": "Remove failed: %s"
+    },
+    {
+      "name": "icon_pack_installed_count_format",
+      "value": "%d installed"
+    },
+    {
+      "name": "icon_pack_invalid_name_format",
+      "value": "%s (invalid)"
+    },
+    {
+      "name": "icon_pack_invalid_desc",
+      "value": "pack.json missing or invalid"
+    },
+    {
+      "name": "icon_pack_meta_format",
+      "value": "%d icons · v%s"
+    },
+    {
+      "name": "setting_network",
+      "value": "Enhanced network"
+    },
+    {
+      "name": "setting_network_enabled",
+      "value": "Developer mode enabled."
+    },
+    {
+      "name": "setting_network_disabled",
+      "value": "Developer mode disabled."
+    },
+    {
+      "name": "setting_network_desc",
+      "value": "When enabled, improves access stability for token-related network services."
+    },
+    {
+      "name": "setting_privacy_policy",
+      "value": "Privacy policy"
+    },
+    {
+      "name": "setting_privacy_agreed",
+      "value": "Agreed"
+    },
+    {
+      "name": "setting_privacy_disagreed",
+      "value": "Not agreed"
+    },
+    {
+      "name": "setting_privacy_desc_prefix",
+      "value": "All features are available regardless of whether you agree to the privacy policy. Tap the [%s] on the right to review it again."
+    },
+    {
+      "name": "setting_export",
+      "value": "Export token secret file (.atsf)"
+    },
+    {
+      "name": "setting_export_pick_single",
+      "value": "Please choose exactly one file path."
+    },
+    {
+      "name": "setting_export_success",
+      "value": "Export completed."
+    },
+    {
+      "name": "setting_export_desc",
+      "value": "The token secret file contains all token secrets stored in the app. The file is not encrypted, so please keep it safe."
+    },
+    {
+      "name": "setting_version_format",
+      "value": "Version: %s(%d)"
+    },
+    {
+      "name": "setting_qq_group_format",
+      "value": "User QQ group: %s"
+    },
+    {
+      "name": "privacy_title",
+      "value": "Privacy Policy"
+    },
+    {
+      "name": "privacy_content",
+      "value": "更新日期：2025/04/03\n生效日期：2025/04/03\n导言\n千维验证器是一款由 郭维 （以下简称“我们”）提供的产品。 您在使用我们的服务时，我们不会收集和使用您的相关信息，我们希望通过本《隐私政策》向您说明。本《隐私政策》与您所使用的千维验证器服务息息相关，希望您仔细阅读，在需要时，按照本《隐私政策》的指引，作出您认为适当的选择。本《隐私政策》中涉及的相关技术词汇，我们尽量以简明扼要的表述，并提供进一步说明的链接，以便您的理解。\n\n您使用或继续使用我们的服务，即意味着同意本《隐私政策》。\n\n感谢您使用我们的服务！我们重视您的隐私，并承诺保护您的个人信息。在使用本服务时，我们希望向您明确声明，我们不会主动收集、存储或共享任何个人信息。请您在使用本服务前，仔细阅读本隐私政策。\n\n1. 我们不收集个人信息\n在您使用本服务的过程中，我们不会主动收集您的任何个人信息。无论您是匿名使用服务，还是以其他方式与我们进行互动，我们都不会要求或获取您的姓名、电子邮件地址、电话号码、住址、支付信息等个人身份信息。\n\n2. 不涉及第三方数据共享\n由于我们不收集任何个人信息，我们也不会将您的任何数据与第三方共享、出售或租赁。您的隐私安全对我们来说至关重要，我们不会向任何第三方提供与您身份相关的任何数据。\n\n3. 技术数据收集\n尽管我们不会收集您的个人信息，但我们可能会使用一些常见的技术手段来收集非个人信息，例如您的设备类型、浏览器类型、操作系统版本、访问日期和时间等。这些信息仅用于改善服务质量和用户体验，不会用于识别您个人身份。\n\n4. 数据存储\n由于我们不会收集个人信息，因此不会在服务器上存储任何与您身份相关的个人数据。任何与服务有关的日志数据都仅用于技术分析和系统维护，且不会用于任何身份识别。\n\n5. 安全性\n虽然我们不收集您的个人信息，但我们依然采取合理的安全措施来保护我们服务的数据安全。这些措施包括但不限于加密技术、服务器安全和网络防护，以确保我们的系统免受外部攻击或数据泄露。\n\n6. 儿童隐私\n我们的服务并不针对儿童，我们不会 knowingly 收集或请求未满18岁用户的个人信息。如果我们发现收集了未满18岁用户的个人信息，我们将尽快删除相关数据。\n\n7. 政策变更\n我们可能会根据法律、政策或服务改进的需要，适时更新或修改本隐私政策。如果本隐私政策发生重要变更，我们将在适当的地方进行通知，以确保您及时了解我们的隐私保护措施。\n\n8. 联系我们\n如果您对本隐私政策有任何疑问或需要更多信息，请随时联系我们。"
+    },
+    {
+      "name": "privacy_disagree",
+      "value": "Disagree"
+    },
+    {
+      "name": "privacy_agree",
+      "value": "Agree"
+    },
+    {
+      "name": "confirm_detail_title",
+      "value": "Confirmation details"
+    },
+    {
+      "name": "confirm_detail_headline",
+      "value": "Title"
+    },
+    {
+      "name": "confirm_detail_summary",
+      "value": "Summary"
+    },
+    {
+      "name": "confirm_detail_created_at",
+      "value": "Created at"
+    },
+    {
+      "name": "confirm_detail_creator_id",
+      "value": "Creator ID"
+    },
+    {
+      "name": "confirm_detail_type_id",
+      "value": "Type ID"
+    },
+    {
+      "name": "confirm_detail_type_name",
+      "value": "Type name"
+    },
+    {
+      "name": "confirm_detail_confirm_id",
+      "value": "Confirmation ID"
+    },
+    {
+      "name": "confirm_disposable_number",
+      "value": "Disposable number"
+    },
+    {
+      "name": "confirm_detail_icon_url",
+      "value": "Icon URL"
+    },
+    {
+      "name": "confirm_list_title",
+      "value": "Steam confirmations"
+    },
+    {
+      "name": "confirm_list_type_test",
+      "value": "Test"
+    },
+    {
+      "name": "confirm_list_type_trade",
+      "value": "Trade"
+    },
+    {
+      "name": "confirm_list_type_sell",
+      "value": "Sell"
+    },
+    {
+      "name": "confirm_list_type_change_phone",
+      "value": "Change phone number"
+    },
+    {
+      "name": "confirm_list_type_remove_phone",
+      "value": "Remove phone number"
+    },
+    {
+      "name": "confirm_list_type_create_key",
+      "value": "Create access key"
+    },
+    {
+      "name": "confirm_list_type_unknown",
+      "value": "Unknown type"
+    },
+    {
+      "name": "confirm_list_query_failed_format",
+      "value": "Query failed: %s"
+    },
+    {
+      "name": "confirm_list_query_success_format",
+      "value": "Query succeeded. Pending items: %d"
+    },
+    {
+      "name": "confirm_list_allow_all",
+      "value": "Allow all?"
+    },
+    {
+      "name": "confirm_list_deny_all",
+      "value": "Deny all?"
+    },
+    {
+      "name": "confirm_list_allow_failed_format",
+      "value": "Allow request failed: %s"
+    },
+    {
+      "name": "confirm_list_deny_failed_format",
+      "value": "Deny request failed: %s"
+    },
+    {
+      "name": "confirm_list_loading",
+      "value": "Querying..."
+    },
+    {
+      "name": "steam_intro_title",
+      "value": "How it works"
+    },
+    {
+      "name": "steam_intro_steps",
+      "value": "1. Sign in to Steam\n2. Add an authenticator to Steam"
+    },
+    {
+      "name": "steam_intro_note",
+      "value": "Note: You will need to enter your Steam password and verification code during the process. If requests time out or fail, enable Enhanced Network in Settings."
+    },
+    {
+      "name": "steam_start_now",
+      "value": "Start now"
+    },
+    {
+      "name": "steam_login_title",
+      "value": "Sign in to Steam"
+    },
+    {
+      "name": "steam_login_prompt",
+      "value": "Enter your Steam account name and password"
+    },
+    {
+      "name": "steam_account_name",
+      "value": "Account name"
+    },
+    {
+      "name": "steam_password",
+      "value": "Password"
+    },
+    {
+      "name": "steam_login_fetching_auth",
+      "value": "Steam login succeeded. Fetching authentication info..."
+    },
+    {
+      "name": "steam_auth_fetch_failed_format",
+      "value": "Failed to fetch Steam authentication info: %s"
+    },
+    {
+      "name": "steam_mfa_device_confirmation",
+      "value": "Steam has multi-factor authentication enabled. Confirm this sign-in on another device, then tap Complete sign-in."
+    },
+    {
+      "name": "steam_mfa_email_confirmation",
+      "value": "Steam has multi-factor authentication enabled. A confirmation email has been sent. Tap the confirmation link in the email, then tap Complete sign-in."
+    },
+    {
+      "name": "steam_mfa_device_code",
+      "value": "Steam has multi-factor authentication enabled. Get the token from your bound authenticator and enter it below."
+    },
+    {
+      "name": "steam_mfa_email_code",
+      "value": "Steam has multi-factor authentication enabled. The token was sent by email. Enter it below."
+    },
+    {
+      "name": "steam_complete_login",
+      "value": "Complete sign-in"
+    },
+    {
+      "name": "steam_fetching_auth",
+      "value": "Fetching Steam authentication info..."
+    },
+    {
+      "name": "steam_link_success_format",
+      "value": "Signed in successfully as %s. Tap Add to add Authenticator to Steam."
+    },
+    {
+      "name": "steam_add_authenticator_failed_format",
+      "value": "Failed to add Authenticator: %s"
+    },
+    {
+      "name": "steam_confirm_link_sms",
+      "value": "Steam is adding an authenticator. Enter the SMS verification code."
+    },
+    {
+      "name": "steam_confirm_link_email",
+      "value": "Steam is adding an authenticator. The verification code was sent by email. Enter the code."
+    },
+    {
+      "name": "steam_complete_add",
+      "value": "Complete add"
+    },
+    {
+      "name": "steam_finalize_failed_format",
+      "value": "Failed to add authenticator: %s"
+    },
+    {
+      "name": "steam_token_mismatch",
+      "value": "The generated token does not match Steam. Tap Complete add once more."
+    },
+    {
+      "name": "steam_add_success",
+      "value": "Added successfully."
+    },
+    {
+      "name": "steam_transfer_prompt",
+      "value": "Another authenticator is already added. Do you want to transfer it?"
+    },
+    {
+      "name": "steam_transfer_note",
+      "value": "Important: Make sure the Steam account is already linked to a phone number, otherwise transfer will fail."
+    },
+    {
+      "name": "steam_transfer_button",
+      "value": "Transfer"
+    },
+    {
+      "name": "steam_transfer_failed_format",
+      "value": "Failed to transfer authenticator: %s"
+    },
+    {
+      "name": "steam_transfer_sms",
+      "value": "Steam is transferring the authenticator. Enter the SMS verification code."
+    },
+    {
+      "name": "steam_complete_transfer",
+      "value": "Complete transfer"
+    },
+    {
+      "name": "steam_refresh_title",
+      "value": "Refresh Steam auth expiry"
+    },
+    {
+      "name": "steam_refresh_prompt",
+      "value": "Refreshing requires signing in to Steam again. Enter your password."
+    },
+    {
+      "name": "steam_refresh_confirmation_type_error_format",
+      "value": "Steam login succeeded, but the confirmation type is invalid: %d"
+    },
+    {
+      "name": "steam_refresh_submitting",
+      "value": "Steam login succeeded. Submitting token..."
+    },
+    {
+      "name": "steam_refresh_submit_failed_format",
+      "value": "Failed to submit Steam token: %s"
+    },
+    {
+      "name": "steam_refresh_submit_success",
+      "value": "Steam token submitted successfully. Fetching authentication info..."
+    },
+    {
+      "name": "steam_refresh_success",
+      "value": "Steam authentication info updated successfully."
+    },
+    {
+      "name": "common_scan_failed_format",
+      "value": "Scan failed: %s"
+    },
+    {
+      "name": "invalid_steam_qr_code",
+      "value": "Invalid Steam login QR code."
+    },
+    {
+      "name": "icon_picker_auto",
+      "value": "Auto"
+    },
+    {
+      "name": "icon_picker_recommended",
+      "value": "Recommended"
+    },
+    {
+      "name": "icon_picker_title",
+      "value": "Choose icon"
+    },
+    {
+      "name": "icon_picker_mode",
+      "value": "Display mode"
     }
   ]
 }

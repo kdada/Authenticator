@@ -1,17 +1,25 @@
-import { systemDateTime } from '@kit.BasicServicesKit';
-import { ComponentContent } from "@kit.ArkUI";
+import { pasteboard, systemDateTime } from '@kit.BasicServicesKit';
+import { ComponentContent } from '@kit.ArkUI';
 import { cryptoFramework } from '@kit.CryptoArchitectureKit';
 import { buffer, JSON, uri, util } from '@kit.ArkTS';
 import { distributedKVStore } from '@kit.ArkData';
-import { kvManager } from '../entryability/EntryAbility';
-import * as steamapi from './steamapi/custom'
-import * as steam2faapi from './steamapi/service_twofactor'
-import * as googleapi from './googleapi/otpauth_migrate'
+import { getLocalizedString, kvManager } from '../entryability/EntryAbility';
+import * as steamapi from './steamapi/custom';
+import * as steam2faapi from './steamapi/service_twofactor';
+import * as googleapi from './googleapi/otpauth_migrate';
 
 export let DefaultToastDuration = 5000
 
+export function copyTextToClipboard(text: string): void {
+  const pasteboardData = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, text)
+  const systemPasteboard = pasteboard.getSystemPasteboard()
+  systemPasteboard.setData(pasteboardData)
+}
+
+
 export class AuthData {
-  id: number = 0
+  uuid: string = ""
+  order: number = 0
   alias: string = ""
   issuer: string = ""
   account: string = ""
@@ -19,6 +27,7 @@ export class AuthData {
   digits: number = 6
   password: string = ""
   external: string = ""
+  tokenIconPath: string = ""
 }
 
 export class SteamAuthData {
@@ -26,7 +35,7 @@ export class SteamAuthData {
   public steamID: string = ""
   public serialNumber: string = ""
   public revocationCode: string = ""
-  public shardSecret: string = ""
+  public sharedSecret: string = ""
   public tokenGID: string = ""
   public identitySecret: string = ""
   public uri: string = ""
@@ -47,10 +56,34 @@ export class SteamAccountData {
   account?: steam2faapi.CTwoFactor_RemoveAuthenticatorViaChallengeContinue_Response
 }
 
+export function isLegacySteamExternal(authdata: Record<string, Object>): boolean {
+  return authdata["sharedSecret"] == undefined && authdata["shardSecret"] != undefined
+}
+
+export function parseSteamExternalAuthData(authdata: Record<string, Object>): SteamAuthData {
+  let steamAuthData = new SteamAuthData()
+  steamAuthData.sharedSecret = authdata["sharedSecret"] as string
+  if (steamAuthData.sharedSecret == undefined) {
+    // 兼容旧版本导出的字段名：shardSecret
+    steamAuthData.sharedSecret = authdata["shardSecret"] as string
+  }
+  steamAuthData.accountName = authdata["accountName"] as string
+  steamAuthData.steamID = authdata["steamID"] as string
+  steamAuthData.serialNumber = authdata["serialNumber"] as string
+  steamAuthData.revocationCode = authdata["revocationCode"] as string
+  steamAuthData.tokenGID = authdata["tokenGID"] as string
+  steamAuthData.identitySecret = authdata["identitySecret"] as string
+  steamAuthData.uri = authdata["uri"] as string
+  steamAuthData.deviceID = authdata["deviceID"] as string
+  steamAuthData.secret1 = authdata["secret1"] as string
+  steamAuthData.accessToken = authdata["accessToken"] as string
+  steamAuthData.refreshToken = authdata["refreshToken"] as string
+  return steamAuthData
+}
+
 export class AuthDataStore {
   public kvStore?: distributedKVStore.DeviceKVStore
   public items: AuthData[] = []
-  private next: number = 0
   private onChanged: (items: AuthData[]) => void
 
   public constructor(onChanged: (items: AuthData[]) => void) {
@@ -60,23 +93,146 @@ export class AuthDataStore {
       securityLevel: distributedKVStore.SecurityLevel.S2,
     }, (err: Error, store: distributedKVStore.DeviceKVStore) => {
       if (err) {
-        throw err
+        throw new Error(err.message)
       }
       this.kvStore = store
-      this.kvStore.getEntries("/data/auth/", (err, data) => {
+      this.kvStore.getEntries("/data/auth/", (_entryErr, data) => {
+        //用来去重
+        const seen = new Set<string>()
         for (let i = 0; i < data.length; i++) {
-          let element = data[i];
-          let authdata = JSON.parse(element.value.value as string) as AuthData
+          let element = data[i]
+          let raw = JSON.parse(element.value.value as string) as Record<string, Object>
+          let authdata = this.normalizeStoredAuthData(raw, i)
           authdata.password = this.generatePassword(authdata)
+          const expectedKey = this.buildStorageKey(authdata.uuid)
+          const currentKey = element.key
+          const hasUuid = typeof raw["uuid"] == "string" && (raw["uuid"] as string).length > 0
+          const hasOrder = typeof raw["order"] == "number"
+          if (seen.has(authdata.uuid)) {
+            if (currentKey != expectedKey) {
+              this.kvStore?.delete(currentKey)
+            }
+            continue
+          }
+          seen.add(authdata.uuid)
           this.items.push(authdata)
-          if (authdata.id >= this.next) {
-            this.next = authdata.id + 1
+          if (!hasUuid || !hasOrder || currentKey != expectedKey) {
+            this.persistAuthItem(authdata)
+            if (currentKey != expectedKey) {
+              this.kvStore?.delete(currentKey)
+            }
           }
         }
-        this.items.sort((a, b) => a.id - b.id)
-        this.onChanged(this.items)
+        this.items.sort((a, b) => a.order - b.order)
+        this.reindexOrders(false)
+        this.notifyChanged()
       })
     })
+  }
+
+  private notifyChanged(): void {
+    this.onChanged([...this.items])
+  }
+
+  //重用，不再到处使用字符串，防止写错
+  private buildStorageKey(uuid: string): string {
+    return `/data/auth/${uuid}`
+  }
+
+  private normalizeString(value: string | undefined | null, fallback: string = ""): string {
+    if (value == undefined || value == null) {
+      return fallback
+    }
+    return `${value}`
+  }
+
+  private normalizeStoredAuthData(raw: Record<string, Object>, fallbackOrder: number): AuthData {
+    let authdata = new AuthData()
+    authdata.alias = this.normalizeString(raw["alias"] as string)
+    authdata.issuer = this.normalizeString(raw["issuer"] as string)
+    authdata.account = this.normalizeString(raw["account"] as string)
+    authdata.secret = this.normalizeString(raw["secret"] as string)
+    authdata.digits = typeof raw["digits"] == "number" ? raw["digits"] as number : 6
+    authdata.password = this.normalizeString(raw["password"] as string)
+    authdata.external = this.normalizeString(raw["external"] as string)
+    authdata.tokenIconPath = this.normalizeString(raw["tokenIconPath"] as string)
+    authdata.uuid = this.normalizeString(raw["uuid"] as string)
+    if (authdata.uuid == "") {
+      authdata.uuid = AuthDataStore.computeAuthUuid(authdata.issuer, authdata.account, authdata.secret)
+    }
+    if (typeof raw["order"] == "number") {
+      authdata.order = raw["order"] as number
+    } else if (typeof raw["id"] == "number") {
+      authdata.order = raw["id"] as number
+    } else {
+      authdata.order = fallbackOrder
+    }
+    return authdata
+  }
+
+  private static computeHash(input: string, seed: number): number {
+    let hash = (2166136261 ^ seed) >>> 0
+    for (let i = 0; i < input.length; i++) {
+      hash ^= input.charCodeAt(i)
+      hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24)
+      hash >>>= 0
+    }
+    return hash >>> 0
+  }
+
+  private static padHex(value: number): string {
+    let hex = value.toString(16)
+    while (hex.length < 8) {
+      hex = `0${hex}`
+    }
+    return hex
+  }
+
+  static computeAuthUuid(issuer: string, account: string, secret: string): string {
+    const source = `${issuer.trim().toLowerCase()}\n${account.trim().toLowerCase()}\n${secret.trim().toUpperCase()}`
+    const combined = `${AuthDataStore.padHex(AuthDataStore.computeHash(source, 17))}` +
+      `${AuthDataStore.padHex(AuthDataStore.computeHash(source, 31))}` +
+      `${AuthDataStore.padHex(AuthDataStore.computeHash(source, 47))}` +
+      `${AuthDataStore.padHex(AuthDataStore.computeHash(source, 61))}`
+    return `${combined.substring(0, 8)}-${combined.substring(8, 12)}-${combined.substring(12, 16)}-` +
+      `${combined.substring(16, 20)}-${combined.substring(20, 32)}`
+  }
+
+  /**
+   * 持久化
+   */
+  private persistAuthItem(item: AuthData): void {
+    let authString = JSON.stringify(item)
+    this.kvStore?.put(this.buildStorageKey(item.uuid), authString)
+  }
+
+  private containsUuid(uuid: string): boolean {
+    return this.findAuthItem(uuid) >= 0
+  }
+
+  /**
+   * 添加到store并持久化，过程中计算password和order
+   * @param item
+   * @returns
+   */
+  private appendAuthItem(item: AuthData): boolean {
+    if (this.containsUuid(item.uuid)) {
+      return false
+    }
+    item.order = this.items.length
+    item.password = this.generatePassword(item)
+    this.persistAuthItem(item)
+    this.items.push(item)
+    return true
+  }
+
+  private reindexOrders(persist: boolean = true): void {
+    for (let i = 0; i < this.items.length; i++) {
+      this.items[i].order = i
+      if (persist) {
+        this.persistAuthItem(this.items[i])
+      }
+    }
   }
 
   static base32Decode(secret: string): Uint8Array {
@@ -172,42 +328,48 @@ export class AuthDataStore {
       let item = this.items[i]
       item.password = this.generatePassword(item)
     }
-
-    this.onChanged(this.items)
+    this.notifyChanged()
   }
 
-  findAuthItem(id: number): number {
+  findAuthItem(uuid: string): number {
     let index = -1
     for (let i = 0; i < this.items.length; i++) {
-      if (id == this.items[i].id) {
+      if (uuid == this.items[i].uuid) {
         index = i
         break
       }
     }
     return index
-
   }
 
-  removeAuthItem(id: number) {
-    let index = this.findAuthItem(id)
+  removeAuthItem(uuid: string) {
+    let index = this.findAuthItem(uuid)
     if (index < 0) {
       return
     }
     let item = this.items[index]
-    this.kvStore?.delete(`/data/auth/${item.id}`)
+    this.kvStore?.delete(this.buildStorageKey(item.uuid))
     this.items.splice(index, 1)
-    this.onChanged(this.items)
+    this.reindexOrders()
+    this.notifyChanged()
   }
 
-  saveAuthItem(id: number) {
-    let index = this.findAuthItem(id)
+  saveAuthItem(uuid: string) {
+    let index = this.findAuthItem(uuid)
     if (index < 0) {
       return
     }
-    let item = this.items[index]
-    let authString = JSON.stringify(item)
-    this.kvStore?.put(`/data/auth/${item.id}`, authString)
-    this.onChanged(this.items)
+    this.persistAuthItem(this.items[index])
+    this.notifyChanged()
+  }
+
+  updateTokenIconPath(uuid: string, tokenIconPath: string) {
+    let index = this.findAuthItem(uuid)
+    if (index < 0) {
+      return
+    }
+    this.items[index].tokenIconPath = tokenIconPath
+    this.saveAuthItem(uuid)
   }
 
   addGoogleAuthItem(data: string) {
@@ -220,25 +382,18 @@ export class AuthDataStore {
         continue
       }
 
-      let authdata: AuthData = {
-        id: this.next,
-        alias: parameter.name!,
-        issuer: parameter.issuer!,
-        account: parameter.name!,
-        secret: AuthDataStore.base32Encode(parameter.secret!),
-        digits: parameter.digits == googleapi.MigrationPayload.DigitCount.DIGIT_COUNT_EIGHT ? 8 : 6,
-        password: "",
-        external: "",
-      }
-      authdata.password = this.generatePassword(authdata)
-      this.next++
-      if (this.kvStore) {
-        let authString = JSON.stringify(authdata)
-        this.kvStore.put(`/data/auth/${authdata.id}`, authString)
-      }
-      this.items.push(authdata)
+      let authdata: AuthData = new AuthData()
+      authdata.alias = parameter.name!
+      authdata.issuer = parameter.issuer!
+      authdata.account = parameter.name!
+      authdata.secret = AuthDataStore.base32Encode(parameter.secret!)
+      authdata.digits = parameter.digits == googleapi.MigrationPayload.DigitCount.DIGIT_COUNT_EIGHT ? 8 : 6
+      authdata.external = ""
+      authdata.tokenIconPath = ""
+      authdata.uuid = AuthDataStore.computeAuthUuid(authdata.issuer, authdata.account, authdata.secret)
+      this.appendAuthItem(authdata)
     }
-    this.onChanged(this.items)
+    this.notifyChanged()
   }
 
   addAuthItem(data: string) {
@@ -248,7 +403,8 @@ export class AuthDataStore {
       return
     }
     if (authURI.scheme != "otpauth" || authURI.host != "totp") {
-      throw new Error(`无效的协议：${authURI.scheme}://${authURI.host}`);
+      throw new Error(getLocalizedString($r('app.string.base_invalid_scheme_format'),
+        `${authURI.scheme}://${authURI.host}`));
     }
     let secret = authURI.getQueryValue("secret")
     let issuer = authURI.getQueryValue("issuer")
@@ -262,88 +418,109 @@ export class AuthDataStore {
     if (colon > 0 && issuer == null) {
       issuer = path.substring(0, colon)
     }
-    let authdata: AuthData = {
-      id: this.next,
-      alias: issuer ?? account,
-      issuer: issuer ?? "",
-      account: account,
-      secret: secret,
-      digits: digits == "8" ? 8 : digits == "7" ? 7 : 6,
-      password: "",
-      external: "",
-    }
-    if (issuer == "Steam") {
+    let authdata: AuthData = new AuthData()
+    authdata.alias = issuer ?? account
+    authdata.issuer = issuer ?? ""
+    authdata.account = account
+    authdata.secret = secret
+    authdata.digits = digits == "8" ? 8 : digits == "7" ? 7 : 6
+    authdata.external = ""
+    authdata.tokenIconPath = ""
+    if (issuer.toLowerCase() == "steam") {
       authdata.digits = 5
     }
-    authdata.password = this.generatePassword(authdata)
-    this.next++
-    if (this.kvStore) {
-      let authString = JSON.stringify(authdata)
-      this.kvStore.put(`/data/auth/${authdata.id}`, authString)
-    }
-    this.items.push(authdata)
-    this.onChanged(this.items)
+    authdata.uuid = AuthDataStore.computeAuthUuid(authdata.issuer, authdata.account, authdata.secret)
+    this.appendAuthItem(authdata)
+    this.notifyChanged()
   }
 
-  recoverAuthItem(data: string) {
-    let result = JSON.parse(data) as AuthData[]
+  recoverAuthItem(data: string): [number, number] {
+    let result = JSON.parse(data) as Array<Record<string, Object>>
     if (!result) {
-      throw new Error("未知的文件格式")
+      throw new Error(getLocalizedString($r('app.string.base_unknown_file_format')))
     }
     for (let index = 0; index < result.length; index++) {
       const element = result[index];
-      Object.entries(element).forEach((pair: [string, string]) => {
+      Object.entries(element).forEach((pair: [string, Object]) => {
+        if (pair[0] == 'password' || pair[0] == 'tokenIconPath'
+          || pair[0] == 'uuid' || pair[0] == 'order' || pair[0] == 'id') {
+          return;
+        }
         if (pair[1] == undefined) {
-          throw new Error(`第 ${index} 个令牌密钥缺少 ${pair[0]}`)
+          throw new Error(getLocalizedString($r('app.string.base_recover_item_missing_format'), index, pair[0]))
         }
       })
     }
+    let hasExist = 0;
+    let total = result.length;
     for (let index = 0; index < result.length; index++) {
-      const element = result[index];
-      element.id = this.next++
-      if (this.kvStore) {
-        let authString = JSON.stringify(element)
-        this.kvStore.put(`/data/auth/${element.id}`, authString)
+      let element = this.normalizeStoredAuthData(result[index], this.items.length)
+      if (element.issuer.toLowerCase() == 'steam' && element.external != '') {
+        let authdata = JSON.parse(element.external) as Record<string, Object>
+        // 兼容旧版备份中的 shardSecret 字段并统一结构
+        if (isLegacySteamExternal(authdata)) {
+          let steamAuthData = parseSteamExternalAuthData(authdata)
+          Object.entries(steamAuthData).forEach((pair: [string, string]) => {
+            if (pair[1] == undefined) {
+              throw new Error(getLocalizedString($r('app.string.base_missing_format'), pair[0]))
+            }
+          })
+          element.external = JSON.stringify(steamAuthData)
+        }
       }
-      this.items.push(element)
+      if (this.containsUuid(element.uuid)) {
+        hasExist++;
+        continue
+      }
+      this.appendAuthItem(element)
     }
-    this.onChanged(this.items)
+    this.notifyChanged()
+    return [hasExist, total];
   }
 
   addOneAuthItem(data: AuthData, externalObject?: Object) {
-    data.id = this.next++
     if (externalObject) {
       data.external = JSON.stringify(externalObject)
     }
-    if (this.kvStore) {
-      let authString = JSON.stringify(data)
-      this.kvStore.put(`/data/auth/${data.id}`, authString)
-    }
-    this.items.push(data)
-    this.onChanged(this.items)
+    data.uuid = AuthDataStore.computeAuthUuid(data.issuer, data.account, data.secret)
+    this.appendAuthItem(data)
+    this.notifyChanged()
   }
 
   async replaceAuthItems(newItems: AuthData[]) {
-    let keys = this.items.filter((item) => item.id >= newItems.length).map((item) => `/data/auth/${item.id}`)
+    let currentKeys = this.items.map((item) => this.buildStorageKey(item.uuid))
     let entries: Array<distributedKVStore.Entry> = []
+    let nextItems: AuthData[] = []
+    //用来去重
+    let seen = new Set<string>()
     for (let i = 0; i < newItems.length; i++) {
       let item = newItems[i]
-      item.id = i
+      item.uuid = item.uuid == "" ? AuthDataStore.computeAuthUuid(item.issuer, item.account, item.secret) : item.uuid
+      if (seen.has(item.uuid)) {
+        continue
+      }
+      //记录已见过的uuid
+      seen.add(item.uuid)
+      item.order = nextItems.length
+      nextItems.push(item)
       let authString = JSON.stringify(item)
       entries.push({
-        key: `/data/auth/${item.id}`,
+        key: this.buildStorageKey(item.uuid),
         value: {
           type: distributedKVStore.ValueType.STRING,
           value: authString,
         }
       })
     }
+    let nextKeySet = new Set<string>()
+    entries.forEach((entry) => nextKeySet.add(entry.key))
+    let deleteKeys = currentKeys.filter((key) => !nextKeySet.has(key))
     await this.kvStore?.putBatch(entries)
-    await this.kvStore?.deleteBatch(keys)
-
-    this.next = this.items.length
-    this.items = newItems
-    this.onChanged(this.items)
+    if (deleteKeys.length > 0) {
+      await this.kvStore?.deleteBatch(deleteKeys)
+    }
+    this.items = nextItems
+    this.notifyChanged()
   }
 }
 
@@ -355,8 +532,8 @@ export class PromptParams<T> {
 
   constructor(ctx: UIContext, builder: WrappedBuilder<[PromptParams<T>]>, data: T) {
     this.ctx = ctx
-    this.content = new ComponentContent(this.ctx, builder, this);
     this.data = data
+    this.content = new ComponentContent(this.ctx, builder, this);
   }
 
   open() {

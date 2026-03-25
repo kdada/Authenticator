@@ -3,10 +3,11 @@ import { cryptoFramework } from '@kit.CryptoArchitectureKit'
 import { url, util } from '@kit.ArkTS'
 import { AsyncCallback, systemDateTime } from '@kit.BasicServicesKit'
 import * as steamapi from './steamapi/custom'
-import * as steam2faapi from './steamapi/service_twofactor'
 import { EAuthSessionGuardType } from './steamapi/custom'
+import * as steam2faapi from './steamapi/service_twofactor'
 import Long from 'long'
-import { proxyServer, proxyAuthToken } from './proxy/Proxy'
+import { proxyAuthToken, proxyServer } from './proxy/Proxy'
+import { getLocalizedString } from '../entryability/EntryAbility'
 
 export class Confirmation {
   // Test = 1
@@ -268,7 +269,7 @@ export class SteamClient {
     const regexp = new RegExp("^https://s.team/q/(\\d+)/(\\d+)(\\?|$)");
     let matchResult = regexp.exec(challengeURL)
     if (!matchResult || matchResult.length != 4) {
-      callback(new Error("无效的 Steam 登陆二维码"))
+      callback(new Error(getLocalizedString($r("app.string.invalid_steam_qr_code"))))
       return
     }
     let version = matchResult[1]

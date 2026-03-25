@@ -1,16 +1,16 @@
-import { SymbolGlyphModifier } from "@ohos.arkui.modifier"
-import { scanCore, scanBarcode } from '@kit.ScanKit';
+﻿import { SymbolGlyphModifier } from '@ohos.arkui.modifier';
+import { scanBarcode, scanCore } from '@kit.ScanKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { BusinessError, systemDateTime } from '@kit.BasicServicesKit';
 import { cryptoFramework } from '@kit.CryptoArchitectureKit';
 import { Setting } from './Setting';
 import { userAuth } from '@kit.UserAuthenticationKit';
 import { Detail } from './Detail';
-import { AuthData, AuthDataStore, DefaultToastDuration, PromptParams, SteamAccountData } from './Base';
+import { AuthData, AuthDataStore, copyTextToClipboard, DefaultToastDuration, PromptParams, SteamAccountData } from './Base';
 import { SteamConfirmationList } from './SteamConfirmationList';
 import { SteamConfirmationDetail } from './SteamConfirmationDetail';
 import { Confirmation } from './Steam';
-import { Add, AddSecret, AddSteamSecret, AddUri } from "./Add";
+import { Add, AddSecret, AddSteamSecret, AddUri } from './Add';
 import {
   AddSteamToken,
   SteamConfirmLink,
@@ -18,11 +18,14 @@ import {
   SteamLink,
   SteamLogin,
   SteamMFALogin,
-  SteamTransferAuthenticator,
-  SteamRefreshToken
-} from "./AddSteam";
-import { ShowPrivacyView } from "./PrivacyView";
-import { curves } from "@kit.ArkUI";
+  SteamRefreshToken,
+  SteamTransferAuthenticator
+} from './AddSteam';
+import { ShowPrivacyView } from './PrivacyView';
+import { curves } from '@kit.ArkUI';
+import { TokenIcon } from '../components/TokenIcon';
+import { buildTokenIconPicker, TokenIconPickerData } from '../components/TokenIconPicker';
+import { getLocalizedString } from '../entryability/EntryAbility';
 
 @Entry
 @Component
@@ -30,7 +33,7 @@ struct Index {
   @State items: AuthData[] = [];
   dragIndex: number = -1;
   @State dragItem?: AuthData = undefined;
-  @State showTokens: Record<number, boolean> = [];
+  @State showTokens: Record<string, boolean> = {};
   @State progress: number = 0;
   @Provide("pageStack") pageStack: NavPathStack = new NavPathStack();
   @Provide("authDataStore") authDataStore: AuthDataStore = new AuthDataStore((items) => {
@@ -41,13 +44,21 @@ struct Index {
   @StorageProp("hideToken") hideToken: boolean = false
   @StorageLink("privacyState") privacyState: string = "Unknown"
   private timer?: number;
+  private lastPasswordTimeStep: number = -1;
 
   aboutToAppear(): void {
     this.items = this.authDataStore.items
-    this.progress = systemDateTime.getTime(false) / 1000 % 30
+    const now = systemDateTime.getTime(false) / 1000
+    this.progress = now % 30
+    this.lastPasswordTimeStep = Math.floor(now / 30)
     this.timer = setInterval(() => {
-      this.progress = systemDateTime.getTime(false) / 1000 % 30
-      this.authDataStore.refreshAllPassword()
+      const current = systemDateTime.getTime(false) / 1000
+      this.progress = current % 30
+      const currentTimeStep = Math.floor(current / 30)
+      if (currentTimeStep != this.lastPasswordTimeStep) {
+        this.lastPasswordTimeStep = currentTimeStep
+        this.authDataStore.refreshAllPassword()
+      }
     }, 1000)
 
     if (this.privacyState == "Unknown") {
@@ -55,7 +66,6 @@ struct Index {
         this.privacyState = state
       })
     }
-
   }
 
   aboutToDisappear(): void {
@@ -104,7 +114,7 @@ struct Index {
       };
       // 配置认证界面
       const widgetParam: userAuth.WidgetParam = {
-        title: '请进行身份认证',
+        title: getLocalizedString($r('app.string.index_auth_title')),
       };
       // 获取认证对象
       const userAuthInstance = userAuth.getUserAuthInstance(authParam, widgetParam);
@@ -130,6 +140,36 @@ struct Index {
 
   onPageHide(): void {
     this.safe = false
+  }
+
+  showSafeModeToast() {
+    this.getUIContext().getPromptAction().showToast({
+      duration: DefaultToastDuration,
+      message: $r('app.string.common_safe_mode_unlock_first')
+    })
+  }
+
+  copyToken(password: string): void {
+    copyTextToClipboard(password)
+    this.getUIContext().getPromptAction().showToast({
+      duration: DefaultToastDuration,
+      message: $r('app.string.common_token_copied')
+    })
+  }
+
+  openTokenIconPicker(item: AuthData) {
+    const data = new TokenIconPickerData()
+    data.issuer = item.issuer
+    data.currentIconPath = item.tokenIconPath
+    let params: PromptParams<TokenIconPickerData>
+    data.onConfirm = (path: string): void => {
+      this.authDataStore.updateTokenIconPath(item.uuid, path)
+    }
+    data.onClose = (): void => {
+      params.close()
+    }
+    params = new PromptParams(this.getUIContext(), wrapBuilder(buildTokenIconPicker), data)
+    params.open()
   }
 
   @Builder
@@ -169,48 +209,6 @@ struct Index {
     }
   }
 
-  private vendors: Map<string, string>= new Map([
-    ["google", "Google.png"],
-    ["microsoft", "Microsoft.png"],
-    ["github", "Github.png"],
-    ["gitlab", "Gitlab.png"],
-    ["steam", "Steam.png"],
-    ["huawei", "Huawei.png"],
-    ["aliyun", "Aliyun.png"],
-    ["namecheap", "Namecheap.png"],
-    ["neteasemail", "NeteaseMail.png"],
-    ["nintendo", "Nintendo.png"],
-    ["nintendo account", "Nintendo.png"],
-    ["epic games", "Epic Games.png"],
-    ["cloudflare", "Cloudflare.png"],
-    ["twitter", "Twitter.png"],
-    ["nvidia", "Nvidia.png"],
-    ["ubisoft", "Ubisoft.png"],
-    ["uplay", "Ubisoft.png"],
-    ["jetbrains", "Jetbrains.png"],
-  ]);
-
-  @Builder
-  Logo(issuer: string) {
-    if (this.vendors.has(issuer.toLowerCase())) {
-      Image($rawfile(this.vendors.get(issuer.toLowerCase())))
-        .width(40)
-        .padding(5)
-        .margin(10)
-        .backgroundColor($r("app.color.vendor_background_color"))
-        .borderRadius(20)
-        .draggable(false)
-    } else {
-      SymbolGlyph($r("sys.symbol.person"))
-        .fontSize(30)
-        .padding(5)
-        .margin(10)
-        .fontColor([$r("app.color.vendor_icon_color")])
-        .backgroundColor($r("app.color.vendor_background_color"))
-        .borderRadius(20)
-    }
-  }
-
   build() {
     Column() {
       Navigation(this.pageStack) {
@@ -219,7 +217,7 @@ struct Index {
             Column() {
               SymbolGlyph($r("sys.symbol.info_shield"))
                 .fontSize(35)
-              Text("还没有添加过令牌密钥\n请点击右上角的加号或扫码按钮添加")
+              Text($r('app.string.index_empty'))
                 .fontWeight(FontWeight.Bold)
                 .padding(20)
                 .textAlign(TextAlign.Center)
@@ -237,7 +235,20 @@ struct Index {
             ForEach(this.items, (item: AuthData, index: number) => {
               ListItem() {
                 Row() {
-                  this.Logo(item.issuer)
+                  Stack() {
+                    TokenIcon({ issuer: item.issuer, iconPath: item.tokenIconPath })
+                  }
+                  .gesture(
+                    LongPressGesture()
+                      .onAction(() => {
+                        if (!this.safe) {
+                          this.showSafeModeToast()
+                          return
+                        }
+                        this.openTokenIconPicker(item)
+                      })
+                  )
+
                   Column() {
                     Text(item.alias)
                       .fontSize(20)
@@ -248,42 +259,49 @@ struct Index {
                   .alignItems(HorizontalAlign.Start)
                   .width("55%")
 
-                  Text((this.safe && (!this.hideToken || this.showTokens[item.id])) ? item.password : "******")
+                  Text((this.safe && (!this.hideToken || this.showTokens[item.uuid])) ? item.password : "******")
                     .fontSize(20)
                     .fontWeight(FontWeight.Bold)
+                    .gesture(
+                      LongPressGesture()
+                        .onAction(() => {
+                          if (!this.safe) {
+                            this.showSafeModeToast()
+                            return
+                          }
+                          if (this.hideToken && !this.showTokens[item.uuid]) {
+                            return
+                          }
+                          this.copyToken(item.password)
+                        })
+                    )
                     .onClick(() => {
                       if (!this.safe) {
-                        this.getUIContext().getPromptAction().showToast({
-                          duration: DefaultToastDuration,
-                          message: "已启用安全模式，请先解锁"
-                        })
+                        this.showSafeModeToast()
                         return
                       }
                       if (!this.hideToken) {
                         this.pageStack.pushPathByName("Detail", item)
                         return
                       }
-                      this.showTokens[item.id] = !!!this.showTokens[item.id]
+                      this.showTokens[item.uuid] = !!!this.showTokens[item.uuid]
                     })
                 }
                 .width("100%")
-                .opacity(item.id == this.dragItem?.id ? 0 : 1)
+                .opacity(item.uuid == this.dragItem?.uuid ? 0 : 1)
                 .onClick(() => {
                   if (!this.safe) {
-                    this.getUIContext().getPromptAction().showToast({
-                      duration: DefaultToastDuration,
-                      message: "已启用安全模式，请先解锁"
-                    })
+                    this.showSafeModeToast()
                     return
                   }
                   this.pageStack.pushPathByName("Detail", item)
                 })
               }
-              .swipeAction({ end: this.deleteButton(item.id) })
+              .swipeAction({ end: this.deleteButton(item.uuid) })
               .borderColor($r("app.color.item_separator_color"))
               .borderWidth({ bottom: 1 })
               .onDragStart((event?: DragEvent, extraParams?: string) => {
-                hilog.debug(0, "testa", `drag start: ${item.id}`)
+                hilog.debug(0, "testa", `drag start: ${item.uuid}`)
                 this.dragIndex = index
                 this.dragItem = item
               })
@@ -291,12 +309,12 @@ struct Index {
                 if (!this.dragItem) {
                   return
                 }
-                if (item.id == this.dragItem?.id) {
+                if (item.uuid == this.dragItem?.uuid) {
                   return
                 }
-                hilog.debug(0, "testa", `drag enter: ${item.id}`)
-                let currentIndex = this.items.findIndex((element) => element.id == this.dragItem!.id)
-                let targetIndex = this.items.findIndex((element) => element.id == item.id)
+                hilog.debug(0, "testa", `drag enter: ${item.uuid}`)
+                let currentIndex = this.items.findIndex((element) => element.uuid == this.dragItem!.uuid)
+                let targetIndex = this.items.findIndex((element) => element.uuid == item.uuid)
                 this.getUIContext()?.animateTo({
                   curve: curves.interpolatingSpring(0, 1, 400, 38)
                 }, () => {
@@ -305,7 +323,7 @@ struct Index {
                 })
               })
               .onDrop((dragEvent: DragEvent) => {
-                hilog.debug(0, "testa", `drop: ${item.id}`)
+                hilog.debug(0, "testa", `drop: ${item.uuid}`)
                 this.dragItem = undefined
                 this.authDataStore.replaceAuthItems(this.items)
               })
@@ -313,8 +331,8 @@ struct Index {
                 if (!this.dragItem) {
                   return
                 }
-                hilog.debug(0, "testa", `drag cancel: ${item.id}`)
-                let currentIndex = this.items.findIndex((element) => element.id == this.dragItem!.id)
+                hilog.debug(0, "testa", `drag cancel: ${item.uuid}`)
+                let currentIndex = this.items.findIndex((element) => element.uuid == this.dragItem!.uuid)
                 this.getUIContext()?.animateTo({
                   curve: curves.interpolatingSpring(0, 1, 400, 38)
                 }, () => {
@@ -323,7 +341,8 @@ struct Index {
                   this.dragItem = undefined
                 })
               })
-            }, (item: AuthData) => item.id.toString() + "-" + item.alias + "-" + item.account + "-" + item.password)
+            }, (item: AuthData) => item.uuid.toString() + "-" + item.alias + "-" + item.account + "-" + item.password +
+              "-" + item.tokenIconPath)
           }
         }
       }
@@ -344,10 +363,7 @@ struct Index {
           symbolIcon: new SymbolGlyphModifier($r('sys.symbol.gearshape')),
           action: () => {
             if (!this.safe) {
-              this.getUIContext().getPromptAction().showToast({
-                duration: DefaultToastDuration,
-                message: "已启用安全模式，请先解锁"
-              })
+              this.showSafeModeToast()
               return
             }
             this.pageStack.pushPathByName("Setting", undefined)
@@ -368,7 +384,7 @@ struct Index {
   }
 
   @Builder
-  deleteButton(id: number) {
+  deleteButton(uuid: string) {
     Button() {
       SymbolGlyph($r("sys.symbol.trash"))
         .fontSize(35)
@@ -378,25 +394,19 @@ struct Index {
     .type(ButtonType.Normal)
     .width(60)
     .height("100%")
-    .onClick((event) => {
+    .onClick(() => {
       if (!this.safe) {
-        this.getUIContext().getPromptAction().showToast({
-          duration: DefaultToastDuration,
-          message: "已启用安全模式，请先解锁"
-        })
+        this.showSafeModeToast()
         return
       }
-      this.authDataStore.removeAuthItem(id)
+      this.authDataStore.removeAuthItem(uuid)
       this.items = this.authDataStore.items
     })
   }
 
   onAddButtonPressed() {
     if (!this.safe) {
-      this.getUIContext().getPromptAction().showToast({
-        duration: DefaultToastDuration,
-        message: "已启用安全模式，请先解锁"
-      })
+      this.showSafeModeToast()
       return
     }
     this.pageStack.pushPathByName("Add", undefined)
@@ -404,10 +414,7 @@ struct Index {
 
   onScanButtonPressed() {
     if (!this.safe) {
-      this.getUIContext().getPromptAction().showToast({
-        duration: DefaultToastDuration,
-        message: "已启用安全模式，请先解锁"
-      })
+      this.showSafeModeToast()
       return
     }
     let options: scanBarcode.ScanOptions =
@@ -422,19 +429,19 @@ struct Index {
           this.authDataStore.addAuthItem(result.originalValue)
           this.getUIContext().getPromptAction().showToast({
             duration: DefaultToastDuration,
-            message: "成功添加令牌"
+            message: $r('app.string.index_add_success')
           })
         } catch (error) {
           this.getUIContext().getPromptAction().showToast({
             duration: DefaultToastDuration,
-            message: `扫码失败：${error}`
+            message: $r('app.string.common_scan_failed_format', `${error}`)
           })
         }
       })
     } catch (error) {
       this.getUIContext().getPromptAction().showToast({
         duration: DefaultToastDuration,
-        message: `扫码失败：${error}`
+        message: $r('app.string.common_scan_failed_format', `${error}`)
       })
     }
   }
@@ -454,20 +461,20 @@ struct Index {
     if (steamTokenCount <= 0) {
       this.getUIContext().getPromptAction().showToast({
         duration: DefaultToastDuration,
-        message: "没有 Steam 令牌，无法扫码登陆 Steam，请先添加 Steam 令牌"
+        message: $r('app.string.index_no_steam_token')
       })
       return
     }
     if (steamAuthDataCount <= 0) {
       this.getUIContext().getPromptAction().showToast({
         duration: DefaultToastDuration,
-        message: "Steam 令牌没有设置认证信息，无法扫码登陆 Steam，请在令牌详情页设置"
+        message: $r('app.string.index_no_steam_auth')
       })
       return
     }
     this.getUIContext().getPromptAction().showToast({
       duration: DefaultToastDuration,
-      message: "请在 Steam 令牌详情页扫码登陆"
+      message: $r('app.string.index_go_to_steam_detail')
     })
     return
   }

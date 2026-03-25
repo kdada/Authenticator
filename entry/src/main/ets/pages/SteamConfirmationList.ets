@@ -1,7 +1,7 @@
-import { DefaultToastDuration, SteamAuthData } from "./Base";
-import { Confirmation, SteamClient } from "./Steam";
-import { SymbolGlyphModifier } from "@kit.ArkUI";
-import { intl } from "@kit.LocalizationKit";
+﻿import { DefaultToastDuration, SteamAuthData } from './Base';
+import { Confirmation, SteamClient } from './Steam';
+import { SymbolGlyphModifier } from '@kit.ArkUI';
+import { intl } from '@kit.LocalizationKit';
 
 @Component
 export struct SteamConfirmationList {
@@ -16,22 +16,22 @@ export struct SteamConfirmationList {
     this.loadSteamConfirmations()
   }
 
-  getType(conf: Confirmation): string {
+  getType(conf: Confirmation): ResourceStr {
     switch (conf.type) {
       case 1:
-        return "测试"
+        return $r('app.string.confirm_list_type_test')
       case 2:
-        return "交易"
+        return $r('app.string.confirm_list_type_trade')
       case 3:
-        return "出售"
+        return $r('app.string.confirm_list_type_sell')
       case 5:
-        return "修改手机号码"
+        return $r('app.string.confirm_list_type_change_phone')
       case 6:
-        return "解绑手机号码"
+        return $r('app.string.confirm_list_type_remove_phone')
       case 9:
-        return "创建访问密钥"
+        return $r('app.string.confirm_list_type_create_key')
       default:
-        return "未知类型"
+        return $r('app.string.confirm_list_type_unknown')
     }
   }
 
@@ -55,14 +55,14 @@ export struct SteamConfirmationList {
         if (err) {
           this.getUIContext().getPromptAction().showToast({
             duration: DefaultToastDuration,
-            message: `查询失败，错误：${err.message}`
+            message: $r('app.string.confirm_list_query_failed_format', err.message)
           })
           return
         }
         this.steamConfirmations = info
         this.getUIContext().getPromptAction().showToast({
           duration: DefaultToastDuration,
-          message: `查询成功，共 ${info.length} 条待确认记录`
+          message: $r('app.string.confirm_list_query_success_format', info.length)
         })
       })
   }
@@ -80,8 +80,8 @@ export struct SteamConfirmationList {
 
   allowAll() {
     this.getUIContext().getPromptAction().showActionMenu({
-      title: "全部允许？",
-      buttons: [{ text: "是", color: $r("app.color.item_confirm_background_color") }],
+      title: $r('app.string.confirm_list_allow_all'),
+      buttons: [{ text: $r('app.string.common_yes'), color: $r("app.color.item_confirm_background_color") }],
     }).then((value) => {
       if (value.index == 0) {
         this.steamClient.allow(this.steamAuthData.steamID, this.steamAuthData.refreshToken,
@@ -89,7 +89,7 @@ export struct SteamConfirmationList {
             if (err) {
               this.getUIContext().getPromptAction().showToast({
                 duration: DefaultToastDuration,
-                message: "确认请求失败，错误：${err.message}"
+                message: $r('app.string.confirm_list_allow_failed_format', err.message)
               })
               return
             }
@@ -101,8 +101,8 @@ export struct SteamConfirmationList {
 
   denyAll() {
     this.getUIContext().getPromptAction().showActionMenu({
-      title: "全部拒绝？",
-      buttons: [{ text: "是", color: $r("app.color.item_delete_background_color") }],
+      title: $r('app.string.confirm_list_deny_all'),
+      buttons: [{ text: $r('app.string.common_yes'), color: $r("app.color.item_delete_background_color") }],
     }).then((value) => {
       if (value.index == 0) {
         this.steamClient.deny(this.steamAuthData.steamID, this.steamAuthData.refreshToken,
@@ -110,7 +110,7 @@ export struct SteamConfirmationList {
             if (err) {
               this.getUIContext().getPromptAction().showToast({
                 duration: DefaultToastDuration,
-                message: "拒绝请求失败，错误：${err.message}"
+                message: $r('app.string.confirm_list_deny_failed_format', err.message)
               })
               return
             }
@@ -138,7 +138,7 @@ export struct SteamConfirmationList {
             if (err) {
               this.getUIContext().getPromptAction().showToast({
                 duration: DefaultToastDuration,
-                message: "确认请求失败，错误：${err.message}"
+                message: $r('app.string.confirm_list_allow_failed_format', err.message)
               })
               return
             }
@@ -161,7 +161,7 @@ export struct SteamConfirmationList {
             if (err) {
               this.getUIContext().getPromptAction().showToast({
                 duration: DefaultToastDuration,
-                message: "拒绝请求失败，错误：${err.message}"
+                message: $r('app.string.confirm_list_deny_failed_format', err.message)
               })
               return
             }
@@ -174,7 +174,7 @@ export struct SteamConfirmationList {
   build() {
     NavDestination() {
       if (this.loading) {
-        Text("查询中...")
+        Text($r('app.string.confirm_list_loading'))
       } else {
         List() {
           ForEach(this.steamConfirmations, (item: Confirmation) => {
@@ -223,9 +223,8 @@ export struct SteamConfirmationList {
         }
       }
     }
-    .title("Steam 确认列表")
+    .title($r('app.string.confirm_list_title'))
     .menus([
-
       {
         value: "allow",
         isEnabled: !this.loading && this.steamConfirmations.length > 0,

@@ -2,11 +2,11 @@
   "string": [
     {
       "name": "ACCESS_BIOMETRIC_reason",
-      "value": "用于在显示 2FA 密码前验证用户。"
+      "value": "用于在显示 2FA 密码前验证用户身份。"
     },
     {
       "name": "CAMERA_reason",
-      "value": "用于扫描二维码。"
+      "value": "用于扫描二维码"
     },
     {
       "name": "INTERNET_reason",
@@ -18,11 +18,711 @@
     },
     {
       "name": "EntryAbility_desc",
-      "value": "description"
+      "value": "描述"
     },
     {
       "name": "EntryAbility_label",
-      "value": "千维验证器"
+      "value": "KDAuth"
+    },
+    {
+      "name": "common_cancel",
+      "value": "取消"
+    },
+    {
+      "name": "common_confirm",
+      "value": "确认"
+    },
+    {
+      "name": "common_add",
+      "value": "添加"
+    },
+    {
+      "name": "common_login",
+      "value": "登录"
+    },
+    {
+      "name": "common_yes",
+      "value": "是"
+    },
+    {
+      "name": "common_safe_mode_unlock_first",
+      "value": "已启用安全模式，请先解锁。"
+    },
+    {
+      "name": "common_enter_token_first",
+      "value": "请先输入令牌。"
+    },
+    {
+      "name": "common_enter_code_first",
+      "value": "请先输入验证码。"
+    },
+    {
+      "name": "common_token_copied",
+      "value": "已复制令牌"
+    },
+    {
+      "name": "base_unknown_file_format",
+      "value": "未知的文件格式。"
+    },
+    {
+      "name": "base_invalid_scheme_format",
+      "value": "无效的协议：%s"
+    },
+    {
+      "name": "base_recover_item_missing_format",
+      "value": "第 %d 个令牌密钥缺少 %s"
+    },
+    {
+      "name": "base_missing_format",
+      "value": "缺少%s"
+    },
+    {
+      "name": "add_title",
+      "value": "添加"
+    },
+    {
+      "name": "add_totp_secret_title",
+      "value": "通过 TOTP 密钥添加"
+    },
+    {
+      "name": "add_totp_secret_desc",
+      "value": "TOTP 密钥是由 A-Z 和 2-7 组成的字符串，例如：ABCDEFGHIJ234567"
+    },
+    {
+      "name": "add_totp_uri_title",
+      "value": "通过 TOTP URI 添加"
+    },
+    {
+      "name": "add_totp_uri_desc",
+      "value": "TOTP URI 是以 otpauth://totp/ 开头的链接，例如：otpauth://totp/Example:alice@example.com?secret=ABCDEFGHIJ234567\u0026issuer=Example"
+    },
+    {
+      "name": "add_restore_title",
+      "value": "从令牌密钥文件（*.atsf）恢复"
+    },
+    {
+      "name": "add_restore_desc",
+      "value": "令牌密钥文件（*.atsf）可从设置中导出。修改文件内容可能导致恢复失败。恢复不会覆盖已有令牌，如有重复请自行删除。"
+    },
+    {
+      "name": "add_restore_pick_single",
+      "value": "请选择一个令牌密钥文件。"
+    },
+    {
+      "name": "add_restore_success",
+      "value": "恢复完成。共%d条，重复%d条。"
+    },
+    {
+      "name": "add_restore_error_format",
+      "value": "恢复失败：%s"
+    },
+    {
+      "name": "add_steam_title",
+      "value": "添加 Steam 令牌"
+    },
+    {
+      "name": "add_steam_desc",
+      "value": "支持 5 位令牌、扫码登录和交易确认。"
+    },
+    {
+      "name": "add_secret_title",
+      "value": "通过 TOTP 密钥添加"
+    },
+    {
+      "name": "add_secret_provider",
+      "value": "提供方"
+    },
+    {
+      "name": "add_secret_provider_placeholder",
+      "value": "请输入提供方名称"
+    },
+    {
+      "name": "add_secret_account",
+      "value": "账号"
+    },
+    {
+      "name": "add_secret_account_placeholder",
+      "value": "用户名或邮箱"
+    },
+    {
+      "name": "add_secret_secret",
+      "value": "密钥"
+    },
+    {
+      "name": "add_secret_secret_placeholder",
+      "value": "仅支持 A-Z 和 2-7"
+    },
+    {
+      "name": "add_secret_digits",
+      "value": "令牌位数"
+    },
+    {
+      "name": "add_secret_invalid_secret",
+      "value": "密钥只能由 A-Z 和 2-7 组成，且至少 2 个字符。"
+    },
+    {
+      "name": "add_secret_error_format",
+      "value": "TOTP 错误：%s"
+    },
+    {
+      "name": "add_uri_title",
+      "value": "通过 TOTP URI 添加"
+    },
+    {
+      "name": "add_uri_heading",
+      "value": "输入 TOTP URI"
+    },
+    {
+      "name": "add_uri_desc",
+      "value": "如果需要同时添加多个，请每行输入一个 URI。"
+    },
+    {
+      "name": "add_uri_partial_error_format",
+      "value": "已添加%d个，第%d行的 TOTP URI 无效：%s"
+    },
+    {
+      "name": "add_steam_secret_title",
+      "value": "添加 Steam 令牌"
+    },
+    {
+      "name": "index_auth_title",
+      "value": "请进行身份认证"
+    },
+    {
+      "name": "index_empty",
+      "value": "还没有添加过令牌密钥\n请点击右上角的加号或扫码按钮添加"
+    },
+    {
+      "name": "index_add_success",
+      "value": "成功添加令牌。"
+    },
+    {
+      "name": "index_no_steam_token",
+      "value": "没有 Steam 令牌，无法扫码登录 Steam，请先添加 Steam 令牌。"
+    },
+    {
+      "name": "index_no_steam_auth",
+      "value": "Steam 令牌没有设置认证信息，无法扫码登录 Steam，请在令牌详情页设置。"
+    },
+    {
+      "name": "index_go_to_steam_detail",
+      "value": "请在 Steam 令牌详情页扫码登录。"
+    },
+    {
+      "name": "detail_steam_input_title",
+      "value": "输入 Steam 认证信息"
+    },
+    {
+      "name": "detail_steam_input_desc",
+      "value": "认证通过后可以使用 Steam 扫码登录和交易确认功能。"
+    },
+    {
+      "name": "detail_steam_input_error_format",
+      "value": "认证信息格式错误，请确保内容来自 maFile 文件：%s"
+    },
+    {
+      "name": "detail_steam_invalid_error_format",
+      "value": "认证信息格式错误：%s，内容：%s"
+    },
+    {
+      "name": "detail_steam_login_failed_format",
+      "value": "Steam 登录失败：%s"
+    },
+    {
+      "name": "detail_steam_login_success",
+      "value": "Steam 登录成功。"
+    },
+    {
+      "name": "detail_steam_login_start",
+      "value": "开始登录 Steam..."
+    },
+    {
+      "name": "detail_steam_section_title",
+      "value": "----- Steam 认证信息 -----"
+    },
+    {
+      "name": "detail_steam_section_desc",
+      "value": "如遇扫码登录和交易确认请求超时或失败，请在设置中开启增强访问。"
+    },
+    {
+      "name": "detail_steam_account",
+      "value": "Steam 账号"
+    },
+    {
+      "name": "detail_steam_id",
+      "value": "Steam ID"
+    },
+    {
+      "name": "detail_device_id",
+      "value": "设备 ID"
+    },
+    {
+      "name": "detail_expire_time",
+      "value": "过期时间"
+    },
+    {
+      "name": "detail_reset",
+      "value": "重新设置"
+    },
+    {
+      "name": "detail_update_expire",
+      "value": "更新过期时间"
+    },
+    {
+      "name": "detail_setup_steam",
+      "value": "设置 Steam 认证信息"
+    },
+    {
+      "name": "detail_alias",
+      "value": "别名"
+    },
+    {
+      "name": "detail_account",
+      "value": "账号"
+    },
+    {
+      "name": "detail_issuer",
+      "value": "发行商"
+    },
+    {
+      "name": "detail_digits",
+      "value": "位数"
+    },
+    {
+      "name": "setting_title",
+      "value": "设置"
+    },
+    {
+      "name": "setting_auto_dark",
+      "value": "跟随系统深色模式"
+    },
+    {
+      "name": "setting_auto_dark_desc",
+      "value": "启用后，App 会自动跟随系统深浅色模式切换。"
+    },
+    {
+      "name": "setting_safe_mode",
+      "value": "启用安全模式"
+    },
+    {
+      "name": "setting_safe_mode_desc",
+      "value": "启用后，打开 App 时需要通过生物识别或 PIN 验证后才能查看令牌。该设置会在下次启动时生效。"
+    },
+    {
+      "name": "setting_hide_token",
+      "value": "隐藏令牌"
+    },
+    {
+      "name": "setting_hide_token_desc",
+      "value": "启用后，首页令牌默认隐藏，点击后才显示。详情页不受影响。"
+    },
+    {
+      "name": "icon_pack_title",
+      "value": "图标包"
+    },
+    {
+      "name": "icon_pack_desc",
+      "value": "可使用内置提供方图标，也可导入兼容 Aegis 的 zip 图标包。"
+    },
+    {
+      "name": "icon_pack_manage",
+      "value": "管理"
+    },
+    {
+      "name": "icon_pack_hide",
+      "value": "收起"
+    },
+    {
+      "name": "icon_pack_builtin",
+      "value": "内置图标"
+    },
+    {
+      "name": "icon_pack_builtin_desc",
+      "value": "默认提供方图标库"
+    },
+    {
+      "name": "icon_pack_import",
+      "value": "导入 zip"
+    },
+    {
+      "name": "icon_pack_remove",
+      "value": "移除"
+    },
+    {
+      "name": "icon_pack_import_success",
+      "value": "图标包导入成功"
+    },
+    {
+      "name": "icon_pack_import_failed_format",
+      "value": "导入失败：%s"
+    },
+    {
+      "name": "icon_pack_remove_success",
+      "value": "图标包已移除"
+    },
+    {
+      "name": "icon_pack_remove_failed_format",
+      "value": "移除失败：%s"
+    },
+    {
+      "name": "icon_pack_installed_count_format",
+      "value": "已安装 %d 个"
+    },
+    {
+      "name": "icon_pack_invalid_name_format",
+      "value": "%s（无效）"
+    },
+    {
+      "name": "icon_pack_invalid_desc",
+      "value": "pack.json 缺失或无效"
+    },
+    {
+      "name": "icon_pack_meta_format",
+      "value": "%d 个图标 · v%s"
+    },
+    {
+      "name": "setting_network",
+      "value": "增强访问"
+    },
+    {
+      "name": "setting_network_enabled",
+      "value": "已启用开发者模式。"
+    },
+    {
+      "name": "setting_network_disabled",
+      "value": "已关闭开发者模式。"
+    },
+    {
+      "name": "setting_network_desc",
+      "value": "启用后，可增强通过令牌访问特定服务时的稳定性。"
+    },
+    {
+      "name": "setting_privacy_policy",
+      "value": "隐私政策"
+    },
+    {
+      "name": "setting_privacy_agreed",
+      "value": "已同意"
+    },
+    {
+      "name": "setting_privacy_disagreed",
+      "value": "未同意"
+    },
+    {
+      "name": "setting_privacy_desc_prefix",
+      "value": "无论是否同意隐私政策，均可使用所有功能。点击选项右侧的【%s】，可再次查看隐私政策内容。"
+    },
+    {
+      "name": "setting_export",
+      "value": "导出令牌密钥文件（.atsf）"
+    },
+    {
+      "name": "setting_export_pick_single",
+      "value": "请选择一个保存路径。"
+    },
+    {
+      "name": "setting_export_success",
+      "value": "导出完成。"
+    },
+    {
+      "name": "setting_export_desc",
+      "value": "令牌密钥文件包含 App 内所有令牌的密钥，文件内容未加密，请妥善保管。"
+    },
+    {
+      "name": "setting_version_format",
+      "value": "版本：%s(%d)"
+    },
+    {
+      "name": "setting_qq_group_format",
+      "value": "用户 QQ 群：%s"
+    },
+    {
+      "name": "privacy_title",
+      "value": "隐私政策"
+    },
+    {
+      "name": "privacy_content",
+      "value": "更新日期：2025/04/03\n生效日期：2025/04/03\n导言\n千维验证器是一款由 郭维 （以下简称“我们”）提供的产品。 您在使用我们的服务时，我们不会收集和使用您的相关信息，我们希望通过本《隐私政策》向您说明。本《隐私政策》与您所使用的千维验证器服务息息相关，希望您仔细阅读，在需要时，按照本《隐私政策》的指引，作出您认为适当的选择。本《隐私政策》中涉及的相关技术词汇，我们尽量以简明扼要的表述，并提供进一步说明的链接，以便您的理解。\n\n您使用或继续使用我们的服务，即意味着同意本《隐私政策》。\n\n感谢您使用我们的服务！我们重视您的隐私，并承诺保护您的个人信息。在使用本服务时，我们希望向您明确声明，我们不会主动收集、存储或共享任何个人信息。请您在使用本服务前，仔细阅读本隐私政策。\n\n1. 我们不收集个人信息\n在您使用本服务的过程中，我们不会主动收集您的任何个人信息。无论您是匿名使用服务，还是以其他方式与我们进行互动，我们都不会要求或获取您的姓名、电子邮件地址、电话号码、住址、支付信息等个人身份信息。\n\n2. 不涉及第三方数据共享\n由于我们不收集任何个人信息，我们也不会将您的任何数据与第三方共享、出售或租赁。您的隐私安全对我们来说至关重要，我们不会向任何第三方提供与您身份相关的任何数据。\n\n3. 技术数据收集\n尽管我们不会收集您的个人信息，但我们可能会使用一些常见的技术手段来收集非个人信息，例如您的设备类型、浏览器类型、操作系统版本、访问日期和时间等。这些信息仅用于改善服务质量和用户体验，不会用于识别您个人身份。\n\n4. 数据存储\n由于我们不会收集个人信息，因此不会在服务器上存储任何与您身份相关的个人数据。任何与服务有关的日志数据都仅用于技术分析和系统维护，且不会用于任何身份识别。\n\n5. 安全性\n虽然我们不收集您的个人信息，但我们依然采取合理的安全措施来保护我们服务的数据安全。这些措施包括但不限于加密技术、服务器安全和网络防护，以确保我们的系统免受外部攻击或数据泄露。\n\n6. 儿童隐私\n我们的服务并不针对儿童，我们不会 knowingly 收集或请求未满18岁用户的个人信息。如果我们发现收集了未满18岁用户的个人信息，我们将尽快删除相关数据。\n\n7. 政策变更\n我们可能会根据法律、政策或服务改进的需要，适时更新或修改本隐私政策。如果本隐私政策发生重要变更，我们将在适当的地方进行通知，以确保您及时了解我们的隐私保护措施。\n\n8. 联系我们\n如果您对本隐私政策有任何疑问或需要更多信息，请随时联系我们。"
+    },
+    {
+      "name": "privacy_disagree",
+      "value": "不同意"
+    },
+    {
+      "name": "privacy_agree",
+      "value": "同意"
+    },
+    {
+      "name": "confirm_detail_title",
+      "value": "确认详情"
+    },
+    {
+      "name": "confirm_detail_headline",
+      "value": "标题"
+    },
+    {
+      "name": "confirm_detail_summary",
+      "value": "描述"
+    },
+    {
+      "name": "confirm_detail_created_at",
+      "value": "创建时间"
+    },
+    {
+      "name": "confirm_detail_creator_id",
+      "value": "创建者 ID"
+    },
+    {
+      "name": "confirm_detail_type_id",
+      "value": "类型 ID"
+    },
+    {
+      "name": "confirm_detail_type_name",
+      "value": "类型名称"
+    },
+    {
+      "name": "confirm_detail_confirm_id",
+      "value": "确认 ID"
+    },
+    {
+      "name": "confirm_disposable_number",
+      "value": "一次性编号"
+    },
+    {
+      "name": "confirm_detail_icon_url",
+      "value": "图标 URL"
+    },
+    {
+      "name": "confirm_list_title",
+      "value": "Steam 确认列表"
+    },
+    {
+      "name": "confirm_list_type_test",
+      "value": "测试"
+    },
+    {
+      "name": "confirm_list_type_trade",
+      "value": "交易"
+    },
+    {
+      "name": "confirm_list_type_sell",
+      "value": "出售"
+    },
+    {
+      "name": "confirm_list_type_change_phone",
+      "value": "更换手机号"
+    },
+    {
+      "name": "confirm_list_type_remove_phone",
+      "value": "移除手机号"
+    },
+    {
+      "name": "confirm_list_type_create_key",
+      "value": "创建访问密钥"
+    },
+    {
+      "name": "confirm_list_type_unknown",
+      "value": "未知类型"
+    },
+    {
+      "name": "confirm_list_query_failed_format",
+      "value": "查询失败：%s"
+    },
+    {
+      "name": "confirm_list_query_success_format",
+      "value": "查询成功，待处理数量：%d"
+    },
+    {
+      "name": "confirm_list_allow_all",
+      "value": "全部允许？"
+    },
+    {
+      "name": "confirm_list_deny_all",
+      "value": "全部拒绝？"
+    },
+    {
+      "name": "confirm_list_allow_failed_format",
+      "value": "确认请求失败：%s"
+    },
+    {
+      "name": "confirm_list_deny_failed_format",
+      "value": "拒绝请求失败：%s"
+    },
+    {
+      "name": "confirm_list_loading",
+      "value": "查询中..."
+    },
+    {
+      "name": "steam_intro_title",
+      "value": "流程说明"
+    },
+    {
+      "name": "steam_intro_steps",
+      "value": "1. 登录 Steam\n2. 向 Steam 中添加身份验证器"
+    },
+    {
+      "name": "steam_intro_note",
+      "value": "注：期间需要输入 Steam 密码和验证码。如遇请求超时或请求失败等问题，请在设置中开启增强访问。"
+    },
+    {
+      "name": "steam_start_now",
+      "value": "立即开始"
+    },
+    {
+      "name": "steam_login_title",
+      "value": "登录 Steam"
+    },
+    {
+      "name": "steam_login_prompt",
+      "value": "请输入 Steam 账户名称和密码"
+    },
+    {
+      "name": "steam_account_name",
+      "value": "账户名称"
+    },
+    {
+      "name": "steam_password",
+      "value": "密码"
+    },
+    {
+      "name": "steam_login_fetching_auth",
+      "value": "Steam 登录成功，正在获取认证信息..."
+    },
+    {
+      "name": "steam_auth_fetch_failed_format",
+      "value": "Steam 认证信息获取失败：%s"
+    },
+    {
+      "name": "steam_mfa_device_confirmation",
+      "value": "Steam 启用了多重身份验证，请在其他设备上确认本次登录，确认完成后再点击【完成登录】。"
+    },
+    {
+      "name": "steam_mfa_email_confirmation",
+      "value": "Steam 启用了多重身份验证，确认邮件已发送，请点击邮件内的确认链接后再点击【完成登录】。"
+    },
+    {
+      "name": "steam_mfa_device_code",
+      "value": "Steam 启用了多重身份验证，请从已绑定的身份验证器获取令牌并输入。"
+    },
+    {
+      "name": "steam_mfa_email_code",
+      "value": "Steam 启用了多重身份验证，令牌已通过邮件发送，请输入令牌。"
+    },
+    {
+      "name": "steam_complete_login",
+      "value": "完成登录"
+    },
+    {
+      "name": "steam_fetching_auth",
+      "value": "正在获取 Steam 认证信息..."
+    },
+    {
+      "name": "steam_link_success_format",
+      "value": "%s登录成功，请点击【添加】按钮将 Authenticator 添加到 Steam。"
+    },
+    {
+      "name": "steam_add_authenticator_failed_format",
+      "value": "添加 Authenticator 失败：%s"
+    },
+    {
+      "name": "steam_confirm_link_sms",
+      "value": "正在向 Steam 添加身份验证器，请输入短信验证码。"
+    },
+    {
+      "name": "steam_confirm_link_email",
+      "value": "正在向 Steam 添加身份验证器，验证码已通过邮件发送，请输入验证码。"
+    },
+    {
+      "name": "steam_complete_add",
+      "value": "完成添加"
+    },
+    {
+      "name": "steam_finalize_failed_format",
+      "value": "添加身份验证器失败：%s"
+    },
+    {
+      "name": "steam_token_mismatch",
+      "value": "动态生成的令牌和 Steam 不一致，请再点击一次【完成添加】。"
+    },
+    {
+      "name": "steam_add_success",
+      "value": "添加成功。"
+    },
+    {
+      "name": "steam_transfer_prompt",
+      "value": "已经添加过其他身份验证器，是否迁移？"
+    },
+    {
+      "name": "steam_transfer_note",
+      "value": "特别说明：请确保 Steam 账户已经绑定了手机号码，否则将无法进行迁移。"
+    },
+    {
+      "name": "steam_transfer_button",
+      "value": "迁移"
+    },
+    {
+      "name": "steam_transfer_failed_format",
+      "value": "迁移身份验证器失败：%s"
+    },
+    {
+      "name": "steam_transfer_sms",
+      "value": "正在迁移 Steam 身份验证器，请输入短信验证码。"
+    },
+    {
+      "name": "steam_complete_transfer",
+      "value": "完成迁移"
+    },
+    {
+      "name": "steam_refresh_title",
+      "value": "更新 Steam 认证信息过期时间"
+    },
+    {
+      "name": "steam_refresh_prompt",
+      "value": "更新需要重新登录 Steam，请输入密码"
+    },
+    {
+      "name": "steam_refresh_confirmation_type_error_format",
+      "value": "Steam 登录成功，但确认类型错误：%d"
+    },
+    {
+      "name": "steam_refresh_submitting",
+      "value": "Steam 登录成功，正在提交令牌..."
+    },
+    {
+      "name": "steam_refresh_submit_failed_format",
+      "value": "Steam 令牌提交失败：%s"
+    },
+    {
+      "name": "steam_refresh_submit_success",
+      "value": "Steam 令牌提交成功，正在获取认证信息..."
+    },
+    {
+      "name": "steam_refresh_success",
+      "value": "更新 Steam 认证信息成功。"
+    },
+    {
+      "name": "common_scan_failed_format",
+      "value": "扫码失败：%s"
+    },
+    {
+      "name": "invalid_steam_qr_code",
+      "value": "无效的 Steam 登陆二维码"
+    },
+    {
+      "name": "icon_picker_auto",
+      "value": "自动"
+    },
+    {
+      "name": "icon_picker_recommended",
+      "value": "推荐"
+    },
+    {
+      "name": "icon_picker_title",
+      "value": "选择图标"
+    },
+    {
+      "name": "icon_picker_mode",
+      "value": "显示方式"
     }
   ]
 }

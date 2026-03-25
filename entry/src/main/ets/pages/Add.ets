@@ -1,6 +1,7 @@
-import { AuthData, AuthDataStore, DefaultToastDuration } from "./Base"
-import { picker, fileIo as fs } from "@kit.CoreFileKit";
-import { util } from "@kit.ArkTS";
+﻿import { AuthDataStore, DefaultToastDuration } from './Base';
+import { fileIo as fs, picker } from '@kit.CoreFileKit';
+import { util } from '@kit.ArkTS';
+
 
 @Component
 export struct Add {
@@ -15,7 +16,7 @@ export struct Add {
           Column() {
             Row() {
               RelativeContainer() {
-                Text("通过 TOTP 密钥添加")
+                Text($r('app.string.add_totp_secret_title'))
                   .fontWeight(FontWeight.Bold)
                   .padding({ left: 10 })
                   .alignRules({
@@ -40,7 +41,7 @@ export struct Add {
             })
 
             Row() {
-              Text("TOTP 密钥是由 A-Z，2-7 组成的字符串，例如：ABCDEFGHIJ234567")
+              Text($r('app.string.add_totp_secret_desc'))
                 .padding({ left: 20 })
                 .fontSize(12)
             }
@@ -51,7 +52,7 @@ export struct Add {
           Column() {
             Row() {
               RelativeContainer() {
-                Text("通过 TOTP URI 添加")
+                Text($r('app.string.add_totp_uri_title'))
                   .fontWeight(FontWeight.Bold)
                   .padding({ left: 10 })
                   .alignRules({
@@ -76,7 +77,7 @@ export struct Add {
             })
 
             Row() {
-              Text("TOTP URI 是一串以 otpauth://totp/ 开头的链接，例如：otpauth://totp/Example:alice@example.com?secret=ABCDEFGHIJ234567&issuer=Example")
+              Text($r('app.string.add_totp_uri_desc'))
                 .padding({ left: 20 })
                 .fontSize(12)
             }
@@ -87,7 +88,7 @@ export struct Add {
           Column() {
             Row() {
               RelativeContainer() {
-                Text("从令牌密钥文件（*.atsf）恢复")
+                Text($r('app.string.add_restore_title'))
                   .fontWeight(FontWeight.Bold)
                   .padding({ left: 10 })
                   .alignRules({
@@ -119,7 +120,7 @@ export struct Add {
                 if (uris.length != 1) {
                   this.getUIContext().getPromptAction().showToast({
                     duration: DefaultToastDuration,
-                    message: "请选择一个令牌密钥文件"
+                    message: $r('app.string.add_restore_pick_single')
                   })
                   return
                 }
@@ -130,15 +131,17 @@ export struct Add {
                   fs.readSync(file.fd, buffer)
                   fs.close(file)
                   let data = util.TextDecoder.create("utf-8").decodeToString(new Uint8Array(buffer))
-                  this.authDataStore.recoverAuthItem(data)
+                  let GeneratedDestructArray_1 = this.authDataStore.recoverAuthItem(data)
+                  let hasExist = GeneratedDestructArray_1[0];
+                  let total = GeneratedDestructArray_1[1];
                   this.getUIContext().getPromptAction().showToast({
                     duration: DefaultToastDuration,
-                    message: "恢复完成"
+                    message: $r('app.string.add_restore_success', total, hasExist)
                   })
                 } catch (e) {
                   this.getUIContext().getPromptAction().showToast({
                     duration: DefaultToastDuration,
-                    message: `恢复错误：${e}`
+                    message: $r('app.string.add_restore_error_format', `${e}`)
                   })
                 }
                 return
@@ -146,7 +149,7 @@ export struct Add {
             })
 
             Row() {
-              Text("令牌密钥文件为 *.atsf，可以从当前 App 的设置中导出。对令牌密钥文件做任何更改都可能导致无法恢复。\n注意：恢复操作不会覆盖已添加到 App 的令牌密钥，请自行删除重复的条目")
+              Text($r('app.string.add_restore_desc'))
                 .padding({ left: 20 })
                 .fontSize(12)
             }
@@ -157,7 +160,7 @@ export struct Add {
           Column() {
             Row() {
               RelativeContainer() {
-                Text("添加 Steam 令牌")
+                Text($r('app.string.add_steam_title'))
                   .fontWeight(FontWeight.Bold)
                   .padding({ left: 10 })
                   .alignRules({
@@ -186,7 +189,7 @@ export struct Add {
             })
 
             Row() {
-              Text("支持 5 位令牌，扫码登陆和交易确认")
+              Text($r('app.string.add_steam_desc'))
                 .padding({ left: 20 })
                 .fontSize(12)
             }
@@ -196,7 +199,7 @@ export struct Add {
         }
       }
     }
-    .title("添加")
+    .title($r('app.string.add_title'))
   }
 }
 
@@ -205,8 +208,7 @@ export struct Add {
 export struct AddSecret {
   @Consume("pageStack") pageStack: NavPathStack;
   @Consume("authDataStore") authDataStore: AuthDataStore;
-  @State provider: string = "Github"
-  @State isOtherProvider: boolean = false
+  @State provider: string = ""
   @State tokenLength: number = 6
   @State account: string = ""
   @State secret: string = ""
@@ -215,75 +217,27 @@ export struct AddSecret {
     NavDestination() {
       Column() {
         Row() {
-          Text("提供方")
+          Text($r('app.string.add_secret_provider'))
             .width("30%")
             .fontWeight(FontWeight.Bold)
             .textAlign(TextAlign.Start)
-          Button(this.isOtherProvider ? "其他" : this.provider)
+          TextInput({ text: this.provider, placeholder: $r('app.string.add_secret_provider_placeholder') })
             .width("60%")
-            .bindMenu([
-              {
-                value: "Github",
-                action: () => {
-                  this.isOtherProvider = false
-                  this.provider = "Github"
-                },
-              },
-              {
-                value: "Gitlab",
-                action: () => {
-                  this.isOtherProvider = false
-                  this.provider = "Gitlab"
-                },
-              },
-              {
-                value: "Google",
-                action: () => {
-                  this.isOtherProvider = false
-                  this.provider = "Google"
-                },
-              },
-              {
-                value: "Microsoft",
-                action: () => {
-                  this.isOtherProvider = false
-                  this.provider = "Microsoft"
-                },
-              },
-              {
-                value: "其他",
-                action: () => {
-                  if (!this.isOtherProvider) {
-                    this.provider = ""
-                  }
-                  this.isOtherProvider = true
-                },
-              }
-            ])
+            .fontWeight(FontWeight.Bold)
+            .textAlign(TextAlign.End)
+            .maxLength(50)
+            .onChange((v) => this.provider = v.trim())
         }
         .height(40)
         .alignItems(VerticalAlign.Center)
         .margin({ bottom: 10 })
 
-        if (this.isOtherProvider) {
-          Row() {
-            TextInput({ text: this.provider, placeholder: "请输入提供方名称" })
-              .width("60%")
-              .fontWeight(FontWeight.Bold)
-              .textAlign(TextAlign.End)
-              .maxLength(50)
-              .onChange((v) => this.provider = v.trim())
-          }
-          .alignSelf(ItemAlign.End)
-          .margin({ bottom: 10 })
-        }
-
         Row() {
-          Text("账号")
+          Text($r('app.string.add_secret_account'))
             .width("30%")
             .fontWeight(FontWeight.Bold)
             .textAlign(TextAlign.Start)
-          TextInput({ text: this.account, placeholder: "用户名或邮箱" })
+          TextInput({ text: this.account, placeholder: $r('app.string.add_secret_account_placeholder') })
             .width("60%")
             .fontWeight(FontWeight.Bold)
             .textAlign(TextAlign.End)
@@ -295,11 +249,11 @@ export struct AddSecret {
         .margin({ bottom: 10 })
 
         Row() {
-          Text("密钥")
+          Text($r('app.string.add_secret_secret'))
             .width("30%")
             .fontWeight(FontWeight.Bold)
             .textAlign(TextAlign.Start)
-          TextInput({ text: this.secret, placeholder: "由 A-Z，2-7 组成的字符串" })
+          TextInput({ text: this.secret, placeholder: $r('app.string.add_secret_secret_placeholder') })
             .width("60%")
             .fontWeight(FontWeight.Bold)
             .textAlign(TextAlign.End)
@@ -309,7 +263,7 @@ export struct AddSecret {
         .margin({ bottom: 10 })
 
         Row() {
-          Text("令牌位数")
+          Text($r('app.string.add_secret_digits'))
             .width("30%")
             .fontWeight(FontWeight.Bold)
             .textAlign(TextAlign.Start)
@@ -335,11 +289,15 @@ export struct AddSecret {
         .margin({ bottom: 10 })
 
         Row() {
-          Button('添加')
+          Button($r('app.string.common_add'))
             .onClick(() => {
               try {
                 if (this.secret.length <= 1 || !this.secret.match(/^[A-Z2-7]+$/)) {
-                  throw new Error("密钥只能由 A-Z，2-7 组成，至少 2 个字符")
+                  this.getUIContext().getPromptAction().showToast({
+                    duration: DefaultToastDuration,
+                    message: $r('app.string.add_secret_invalid_secret')
+                  })
+                  return
                 }
                 let encodedProvider = encodeURIComponent(this.provider)
                 let encodedAccount = encodeURIComponent(this.account)
@@ -350,7 +308,7 @@ export struct AddSecret {
               } catch (e) {
                 this.getUIContext().getPromptAction().showToast({
                   duration: DefaultToastDuration,
-                  message: `TOTP 错误：${e}`
+                  message: $r('app.string.add_secret_error_format', `${e}`)
                 })
               }
             })
@@ -359,7 +317,7 @@ export struct AddSecret {
         }
       }
     }
-    .title("通过 TOTP 密钥添加")
+    .title($r('app.string.add_secret_title'))
   }
 }
 
@@ -373,11 +331,11 @@ export struct AddUri {
     NavDestination() {
       Row() {
         Column() {
-          Text("输入 TOTP URI")
+          Text($r('app.string.add_uri_heading'))
             .fontSize(30)
             .fontWeight(FontWeight.Bold)
             .margin({ bottom: 10 })
-          Text("如果需要同时添加多个，每行一个 URI")
+          Text($r('app.string.add_uri_desc'))
             .fontSize(14)
             .margin({ bottom: 20 })
           TextArea({ text: "", placeholder: "otpauth://totp/xxx?secret=yyy" })
@@ -387,7 +345,7 @@ export struct AddUri {
               this.uri = value
             })
           Row() {
-            Button('添加')
+            Button($r('app.string.common_add'))
               .onClick(() => {
                 if (this.uri == "") {
                   return
@@ -406,7 +364,7 @@ export struct AddUri {
                   } catch (e) {
                     this.getUIContext().getPromptAction().showToast({
                       duration: DefaultToastDuration,
-                      message: `已添加 ${count} 个，第 ${i + 1} 行的 TOTP URI 错误：${e}`
+                      message: $r('app.string.add_uri_partial_error_format', count, i + 1, `${e}`)
                     })
                     return
                   }
@@ -425,7 +383,7 @@ export struct AddUri {
       .width("90%")
       .height("90%")
     }
-    .title("通过 TOTP URI 添加")
+    .title($r('app.string.add_uri_title'))
   }
 }
 
@@ -440,7 +398,7 @@ export struct AddSteamSecret {
     NavDestination() {
       Column() {
         Row() {
-          Text("提供方")
+          Text($r('app.string.add_secret_provider'))
             .width("30%")
             .fontWeight(FontWeight.Bold)
             .textAlign(TextAlign.Start)
@@ -454,11 +412,11 @@ export struct AddSteamSecret {
         .margin({ bottom: 10 })
 
         Row() {
-          Text("账号")
+          Text($r('app.string.add_secret_account'))
             .width("30%")
             .fontWeight(FontWeight.Bold)
             .textAlign(TextAlign.Start)
-          TextInput({ text: this.account, placeholder: "用户名或邮箱" })
+          TextInput({ text: this.account, placeholder: $r('app.string.add_secret_account_placeholder') })
             .width("60%")
             .fontWeight(FontWeight.Bold)
             .textAlign(TextAlign.End)
@@ -470,11 +428,11 @@ export struct AddSteamSecret {
         .margin({ bottom: 10 })
 
         Row() {
-          Text("密钥")
+          Text($r('app.string.add_secret_secret'))
             .width("30%")
             .fontWeight(FontWeight.Bold)
             .textAlign(TextAlign.Start)
-          TextInput({ text: this.secret, placeholder: "由 A-Z，2-7 组成的字符串" })
+          TextInput({ text: this.secret, placeholder: $r('app.string.add_secret_secret_placeholder') })
             .width("60%")
             .fontWeight(FontWeight.Bold)
             .textAlign(TextAlign.End)
@@ -484,7 +442,7 @@ export struct AddSteamSecret {
         .margin({ bottom: 10 })
 
         Row() {
-          Text("令牌位数")
+          Text($r('app.string.add_secret_digits'))
             .width("30%")
             .fontWeight(FontWeight.Bold)
             .textAlign(TextAlign.Start)
@@ -498,11 +456,15 @@ export struct AddSteamSecret {
         .margin({ bottom: 10 })
 
         Row() {
-          Button('添加')
+          Button($r('app.string.common_add'))
             .onClick(() => {
               try {
                 if (this.secret.length <= 1 || !this.secret.match(/^[A-Z2-7]+$/)) {
-                  throw new Error("密钥只能由 A-Z，2-7 组成，至少 2 个字符")
+                  this.getUIContext().getPromptAction().showToast({
+                    duration: DefaultToastDuration,
+                    message: $r('app.string.add_secret_invalid_secret')
+                  })
+                  return
                 }
                 let encodedProvider = encodeURIComponent("Steam")
                 let encodedAccount = encodeURIComponent(this.account)
@@ -513,7 +475,7 @@ export struct AddSteamSecret {
               } catch (e) {
                 this.getUIContext().getPromptAction().showToast({
                   duration: DefaultToastDuration,
-                  message: `TOTP 错误：${e}`
+                  message: $r('app.string.add_secret_error_format', `${e}`)
                 })
               }
             })
@@ -522,6 +484,6 @@ export struct AddSteamSecret {
         }
       }
     }
-    .title("添加 Steam 令牌")
+    .title($r('app.string.add_steam_secret_title'))
   }
 }
